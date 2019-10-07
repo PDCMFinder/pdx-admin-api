@@ -16,6 +16,7 @@ import {CurationOrphanComponent} from './curation-orphan/curation-orphan.compone
 import {CurationValidateComponent} from './curation-validate/curation-validate.component';
 
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import { LoginComponent } from './login/login.component';
 
 
 @NgModule({
@@ -30,6 +31,7 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
         CurationArchiveComponent,
         CurationOrphanComponent,
         CurationValidateComponent,
+        LoginComponent,
     ],
     imports: [
         BrowserModule,

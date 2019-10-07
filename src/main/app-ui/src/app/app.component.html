@@ -1,12 +1,12 @@
 
 <!-- Selector:app-side-nav-bar for Components from the side-nav-bar.component.html -->
 
-<app-side-nav-bar>
+<app-side-nav-bar *ngIf="!isFullPage">
   ...
 </app-side-nav-bar>
 
 
-<div id="page-wrapper" class="gray-bg">
+<div id="page-wrapper" class="gray-bg" *ngIf="!isFullPage">
   <app-top-nav-bar>
 
   </app-top-nav-bar>
@@ -16,3 +16,8 @@
 
     </router-outlet>
 </div>
+
+
+<router-outlet *ngIf="isFullPage">
+
+</router-outlet>

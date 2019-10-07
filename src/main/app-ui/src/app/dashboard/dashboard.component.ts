@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import {MappingService} from "../mapping.service";
 import {GeneralService} from "../general.service";
+import {ActivatedRoute, Route, Router} from "@angular/router";
 
 declare function pdxFinderbarChart(title: String,
                                    data: any,
@@ -17,10 +18,27 @@ declare function pdxFinderbarChart(title: String,
 export class DashboardComponent implements OnInit {
 
 
+    private loggedIn;
 
-  constructor(private gs: GeneralService) { }
+  constructor(private _mappingService: MappingService,
+              private router: Router,
+              private gs: GeneralService) { }
 
   ngOnInit() {
+
+      this._mappingService.getLoggedIn('diagnosis')
+          .subscribe(
+              data => {
+
+                  console.log(data.name)
+
+                  if (data.name == null){
+                      this.router.navigate([`login/`])
+                  }
+
+              }
+          );
+
 
       let chartData = [{
           "mapping": "JAX",

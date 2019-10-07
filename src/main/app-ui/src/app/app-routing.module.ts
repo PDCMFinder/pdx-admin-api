@@ -9,12 +9,14 @@ import {CurationManageComponent} from "./curation-manage/curation-manage.compone
 import {CurationOrphanComponent} from "./curation-orphan/curation-orphan.component";
 import {CurationArchiveComponent} from "./curation-archive/curation-archive.component";
 import {CurationValidateComponent} from "./curation-validate/curation-validate.component";
+import {LoginComponent} from "./login/login.component";
 
 
 const routes: Routes = [
     //{ path: '', redirectTo: '/dashboard', pathMatch: 'full' },
     {path: '', component: DashboardComponent},
     {path: 'dashboard', component: DashboardComponent},
+    {path: 'login', component: LoginComponent},
     {path: 'curation', component: CurationMappingComponent},
     {path: 'curation/manage', component: CurationManageComponent},
     {path: 'curation/validate', component: CurationValidateComponent},
