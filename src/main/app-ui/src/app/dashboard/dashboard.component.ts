@@ -70,7 +70,7 @@ export class DashboardComponent implements OnInit {
       //this.gs.loadScript('../pdxfinder/dependencies/chart/light.js');
       //this.gs.loadScript('../pdxfinder/dependencies/chart/3dbar.js');
 
-      pdxFinderbarChart("Missing Mapping",chartData,"chartdiv", "mapping", "visits", 15);
+     // pdxFinderbarChart("Missing Mapping",chartData,"chartdiv", "mapping", "visits", 15);
 
   }
 

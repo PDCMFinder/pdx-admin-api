@@ -1,7 +1,7 @@
 facebook:
   client:
     clientId: 233668646673605
-    clientSecret: 33b17e044ee6a4fa383f46ec6e28ea1d
+    clientSecret:
     accessTokenUri: https://graph.facebook.com/oauth/access_token
     userAuthorizationUri: https://www.facebook.com/dialog/oauth
     tokenName: oauth_token
@@ -13,7 +13,7 @@ facebook:
 github:
   client:
     clientId: 7ff7827ba5d23037e81c
-    clientSecret: 5f4a6bdf2869bbc4b5ea3bf3f47cfa0b5d730463
+    clientSecret:
     accessTokenUri: https://github.com/login/oauth/access_token
     userAuthorizationUri: https://github.com/login/oauth/authorize
     clientAuthenticationScheme: form
@@ -23,7 +23,7 @@ github:
 google:
   client:
     clientId: 550386279464-33md1vgjr194lfsaahcdb68620s6da11.apps.googleusercontent.com
-    clientSecret: CIjCgSGqBxxxBbRjHO8avtBy
+    clientSecret:
     accessTokenUri: https://accounts.google.com/o/oauth2/token
     userAuthorizationUri: https://accounts.google.com/o/oauth2/auth
     clientAuthenticationScheme: form
@@ -31,3 +31,5 @@ google:
     redirect-uri: http://localhost:8080
   resource:
     userInfoUri:  https://www.googleapis.com/oauth2/v3/userinfo
+
+
