@@ -49,11 +49,6 @@
         <i class="ti-control-skip-forward"></i> &nbsp; Skip this Term
     </a>
 
-    <!--
-    <button class="btn btn-primary btn-circle " type="button" (click)="updateSkippedTerm()"> <i class="ti-control-skip-forward"></i> </button> -->
-    <!--
-    <button class="btn btn-primary btn-sm" type="submit" (click)="updateSkippedTerm()"> Skip Term </button>
-     <button class="btn btn-outline btn-default btn-sm" (click)="toggleNotification(false)"> Close </button> *ngIf="!submitted"  -->
 </div>
 
 
@@ -131,23 +126,16 @@
                                         <td><input type="text" name="{{'mappedTermLabel'+i}}" class="editableField"
                                                    [(ngModel)]="mapping.mappedTermLabel"
                                                    value="{{ mapping.mappedTermLabel }}" readonly>
-                                        </td><!-- required
-                                                   [class.is-invalid]="'mappedTermLabel'+i.invalid && 'mappedTerm'+i.dirty" -->
+                                        </td>
 
                                         <td><input type="text" name="{{'mapType'+i}}" class="editableField"
                                                    #curatorMapType
                                                    (input)="mapping.mapType=curatorMapType.value"
-                                                   value="{{ mapping.mapType }}">
-                                            <!--
-                                                   required
-                                                   [class.is-invalid]="'mapType'+i.invalid && 'mapType'+i.dirty" --></td>
+                                                   value="{{ mapping.mapType }}"></td>
 
                                         <td><input type="text" name="{{'justification'+i}}" class="editableField"
                                                    [(ngModel)]="mapping.justification"
                                                    value="{{ mapping.justification }}">
-                                            <!--
-                                                   required
-                                                   [class.is-invalid]="'justification'+i.invalid && 'justification'+i.dirty"-->
 
                                             <input type="hidden" name="{{'mappedTermUrl'+i}}"
                                                    [(ngModel)]="mapping.mappedTermUrl"
@@ -164,13 +152,11 @@
                                         <span *ngIf="data.page == 1"> First « </span>
                                         <a *ngIf="data.page != 1"
                                            [routerLink]="['../'+mappingStatusToGet+'-1']"> First « </a>
-                                        <!--    href="/{{'curation/'+entityTypeUrl+'/'+dataSource+'/1'}}" -->
                                     </li>
 
                                     <li *ngFor="let count of pageRange " [ngClass]="{'active': data.page == count }">
 
                                         <a [routerLink]="['../'+mappingStatusToGet+'-'+count]"> {{count }} </a>
-                                        <!--     href="/{{'curation/'+entityTypeUrl+'/'+dataSource+'/'+count}}" -->
                                     </li>
 
 
@@ -178,7 +164,7 @@
                                         <span *ngIf="data.page == data.totaPages"> Last « </span>
                                         <a *ngIf="data.page != data.totaPages"
                                            [routerLink]="['../'+mappingStatusToGet+'-'+data.totaPages]"> Last
-                                            « </a>  <!--  href="/{{'curation/'+entityTypeUrl+'/'+dataSource+'/'+data.totaPages}}"  -->
+                                            « </a>
                                     </li>
 
                                 </ul>
@@ -199,10 +185,7 @@
                             </div>
                         </div>
                     </div>
-
                 </form>
-
-
 
 
             </div>
@@ -211,22 +194,7 @@
     </div>
 </div>
 
-
-<!-- The Suggested Mappings Displayes here as a child route with deeplinked url  (click)="showSuggestedMappings(34)"  [disabled]="mappingForm.form.invalid || topicHasError"  -->
 <router-outlet>
 
 </router-outlet>
 
-<!--
-<th> SOURCE </th>
-<th> DIAGNOSIS </th>
-<th> TUMOR TYPE </th>
-<th> PRIMARY TUMOR </th>
--->
-
-<!-- ; {{ mapping.mappingValues.SampleDiagnosis | uppercase }}  <td> {{ mapping.mappingValues.SampleDiagnosis | uppercase }} </td>
- <td> {{ mapping.mappingValues.TumorType | uppercase }} </td>
- <td> {{ mapping.mappingValues.OriginTissue | uppercase }} </td> -->
-
-<!-- <a [routerLink]="['../'+count]"> {{count }} </a>
-<a [routerLink]="['../']" [queryParams]="{page: count}"  > {{count }} </a>    {{'curation/'+entityTypeUrl+'/'+dataSource}} +'?page='+count -->

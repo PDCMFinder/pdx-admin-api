@@ -1,4 +1,3 @@
-
 // function pdxFinderbarChart(title, chartData, cssID, categoryField, valueField, labelRotation) {
 //
 //
@@ -81,51 +80,66 @@ var chart = AmCharts.makeChart("chartdiv", {
     "type": "serial",
     "startDuration": 2,
     "dataProvider": [{
-        "Attendance": 271,
-        "Month": "March",
-        "Teachers": 100,
-        "Converts": 30,
-        "Visitors": 31,
+        "Mutation": 808,
+        "Month": "April 2018",
+        "Dosing Studies": 356,
         "url": "#"
     }, {
-        "Attendance": 34,
-        "Month": "April",
-        "Teachers": 38,
-        "Converts": 32,
-        "Visitors": 28,
+        "Mutation": 1472,
+        "Month": "April 2019",
+        "Cytogenetics": 81,
+        "Copy Number Alteration": 729,
+        "Dosing Studies": 371,
+        "Patient Treatment": 216,
         "url": "#"
-    }, {"Attendance": 68, "Month": "June", "Teachers": 124, "Converts": 64, "Visitors": 71, "url": "#"}],
-    "valueAxes": [{"position": "left", "title": "Summary This Year"}],
+    }, {
+        "Mutation": 1546,
+        "Month": "October 2019",
+        "Cytogenetics": 128,
+        "Copy Number Alteration": 1082,
+        "Dosing Studies": 370,
+        "Patient Treatment": 244,
+        "url": "#"
+    }],
+    "valueAxes": [{"position": "left", "title": "Data Available / Data Release"}],
     "graphs": [{
-        "balloonText": "<span style='font-size:10px;'>Attendance: [[value]]<\/span>",
+        "balloonText": "<span style='font-size:10px;'>Mutation: [[value]]<\/span>",
         "fillAlphas": 0.8,
         "lineAlpha": 0.2,
         "type": "column",
-        "valueField": "Attendance",
+        "valueField": "Mutation",
         "urlField": "url",
         "fillColors": "#dc3545"
     }, {
-        "balloonText": "<span style='font-size:10px;'>Teachers: [[value]]<\/span>",
+        "balloonText": "<span style='font-size:10px;'>Cytogenetics: [[value]]<\/span>",
         "fillAlphas": 0.8,
         "lineAlpha": 0.2,
         "type": "column",
-        "valueField": "Teachers",
+        "valueField": "Cytogenetics",
         "urlField": "url",
         "fillColors": "#17a2b8"
     }, {
-        "balloonText": "<span style='font-size:10px;'>Converts: [[value]]<\/span>",
+        "balloonText": "<span style='font-size:10px;'>CNA: [[value]]<\/span>",
         "fillAlphas": 0.8,
         "lineAlpha": 0.2,
         "type": "column",
-        "valueField": "Converts",
+        "valueField": "Copy Number Alteration",
         "urlField": "url",
         "fillColors": "#007bff"
     }, {
-        "balloonText": "<span style='font-size:10px;'>Visitors: [[value]]<\/span>",
+        "balloonText": "<span style='font-size:10px;'>Dosing Studies: [[value]]<\/span>",
         "fillAlphas": 0.8,
         "lineAlpha": 0.2,
         "type": "column",
-        "valueField": "Visitors",
+        "valueField": "Dosing Studies",
+        "urlField": "url",
+        "fillColors": "#04478F"
+    }, {
+        "balloonText": "<span style='font-size:10px;'>Patient Treatment: [[value]]<\/span>",
+        "fillAlphas": 0.8,
+        "lineAlpha": 0.2,
+        "type": "column",
+        "valueField": "Patient Treatment",
         "urlField": "url",
         "fillColors": "#04478F"
     }],

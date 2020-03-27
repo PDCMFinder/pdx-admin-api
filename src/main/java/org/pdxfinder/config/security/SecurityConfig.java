@@ -69,7 +69,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         // @formatter:off
-        http.antMatcher("/**").authorizeRequests().antMatchers("/", "/login**", "/webjars/**", "/error**").permitAll().anyRequest()
+        http.antMatcher("/**").authorizeRequests()
+                .antMatchers("/", "/login**", "/webjars/**", "/error**", "/db-admin/**").permitAll().anyRequest()
                 .permitAll().and().exceptionHandling()
                 .authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/")).and().logout()
                 .logoutSuccessUrl("/").permitAll().and().csrf()
@@ -82,8 +83,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 
     }
-
-
 
 
 //    //@Override
