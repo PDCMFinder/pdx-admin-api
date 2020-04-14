@@ -23,20 +23,17 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
 
-/*
- * Created by csaba on 09/07/2018.
- */
-@CrossOrigin
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api")
 public class AjaxController {
 
-    private final static Logger log = LoggerFactory.getLogger(AjaxController.class);
+    private static final Logger log = LoggerFactory.getLogger(AjaxController.class);
     private ObjectMapper mapper = new ObjectMapper();
     private RestTemplate restTemplate;
     private String homeDir = System.getProperty("user.home");
 
-    private final String ZOOMA_URL = "http://scrappy.ebi.ac.uk:8080/annotations";
+    private static final String ZOOMA_URL = "http://scrappy.ebi.ac.uk:8080/annotations";
     private String errReport = "";
 
 
@@ -104,51 +101,35 @@ public class AjaxController {
     public ResponseEntity<?> getOneMapping(@PathVariable Optional<Integer> entityId) {
 
         if (entityId.isPresent()) {
-
             MappingEntity result = mappingService.getMappingEntityById(entityId.get());
-
             return new ResponseEntity<Object>(result, HttpStatus.OK);
         }
-
         return new ResponseEntity<Object>(HttpStatus.BAD_REQUEST.getReasonPhrase(), HttpStatus.BAD_REQUEST);
     }
 
-
     @GetMapping("/mappings/summary")
     public ResponseEntity<?> getMappingStatSummary(@RequestParam(value = "entity-type", defaultValue = "") Optional<String> entityType) {
-
         List<Map> result = mappingService.getMappingSummary(entityType.get());
-
         return new ResponseEntity<Object>(result, HttpStatus.OK);
     }
 
-
-    /**
-     * Bulk update of Records
-     */
     @PutMapping("/mappings")
     public ResponseEntity<?> editListOfEntityMappings(@RequestBody List<MappingEntity> submittedEntities) {
 
         List data = mapper.convertValue(submittedEntities, List.class);
         log.info(data.toString());
-
         List<Error> errors = validateEntities(submittedEntities);
-
         if (submittedEntities.size() < 1 || !errors.isEmpty()) {
             return new ResponseEntity<>(errors, HttpStatus.NOT_FOUND);
         }
-
         List<MappingEntity> updated = mappingService.updateRecords(submittedEntities);
         return new ResponseEntity<>(updated, HttpStatus.OK);
-
     }
 
 
     @GetMapping("/mappings/archive")
     public ResponseEntity<?> readArchive(@RequestParam("entity-type") String entityType) {
-
         mappingService.readArchive(entityType);
-
         return new ResponseEntity<>("", HttpStatus.OK);
     }
 
@@ -161,39 +142,23 @@ public class AjaxController {
         HttpStatus responseStatus = HttpStatus.OK;
 
         if (uploads.isPresent()) {
-
-            /*
-             * Send Data for Serialization
-             */
             List<Map<String, String>> csvData = utilityService.serializeMultipartFile(uploads.get());
-
-            /*
-             * Validate CSV for emptiness, correct column Headers and valid contents
-             */
             List report = new ArrayList();
             try {
-
                 report = csvHandler.validateUploadedCSV(csvData);
             }catch (Exception e){
-
                 report.add(HttpStatus.UNPROCESSABLE_ENTITY.getReasonPhrase());
             }
 
-            // If all rows passed submit data for processing
             if (report.isEmpty()) {
-
                 List<MappingEntity> updatedData = mappingService.processUploadedCSV(csvData);
-
                 responseBody = updatedData;
                 responseStatus = HttpStatus.OK;
             }else {
-
                 responseBody = report;
                 responseStatus = HttpStatus.UNPROCESSABLE_ENTITY;
             }
 
-            // For this operation, create record in uploadedFileTable, For each of this back up in the validatedData Table
-            // Further read uploadedFile Table for getting history.
         }
 
         return new ResponseEntity<>(responseBody, responseStatus);

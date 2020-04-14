@@ -16,7 +16,6 @@ export class MappingService {
     private _summaryUrl = this.serverUrl+"/api/mappings/summary";
     private _mappingsUrl = this.serverUrl+"/api/mappings";
     public _exportUrl = this.serverUrl+"/api/mappings/export";
-
     private _uploadURL = this.serverUrl+"/api/mappings/uploads";
 
 
