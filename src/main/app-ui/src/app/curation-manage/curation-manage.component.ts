@@ -119,16 +119,16 @@ export class CurationManageComponent implements OnInit {
 
 
 
-     exportCSV(){
+    exportCSV(){
         const download = function (data) {
             const blob = new Blob([data], {type: 'text/csv'});
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
-           // a.setAttribute('hidden', '');
-           // a.setAttribute('download', 'download.csv');
-           // document.body.appendChild(a);
-           // a.click();
-           // document.removeChild(a);
+            // a.setAttribute('hidden', '');
+            // a.setAttribute('download', 'download.csv');
+            // document.body.appendChild(a);
+            // a.click();
+            // document.removeChild(a);
             a.href = url;
             a.download = "myFile.csv";
             a.click();
@@ -141,15 +141,15 @@ export class CurationManageComponent implements OnInit {
             const headers = Object.keys(data[0]);
             csvRows.push(headers.join(','));
             for (const row of data){
-               const values = headers.map(header =>{
-                   const escaped = (''+row[header]).replace(/"/g, '\\"');
-                   return `"${escaped}"`;
+                const values = headers.map(header =>{
+                    const escaped = (''+row[header]).replace(/"/g, '\\"');
+                    return `"${escaped}"`;
                 });
-               csvRows.push(values.join(','));
+                csvRows.push(values.join(','));
             }
             return csvRows.join('\n');
         }
-        
+
         const data = this.mappings.map(row =>({
             dateCreated: row.dateCreated,
             entityId: row.entityId,
@@ -186,7 +186,7 @@ export class CurationManageComponent implements OnInit {
     }
 
     getStatusList(){
-       var statArray = ['validated', 'created', 'orphaned', 'unmapped'];
+        var statArray = ['validated', 'created', 'orphaned', 'unmapped'];
         statArray.forEach((status, index) => {
             this.statusList.push(
                 {id: index, text: status, checked: false}
