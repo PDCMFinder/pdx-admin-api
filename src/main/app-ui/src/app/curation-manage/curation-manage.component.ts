@@ -89,8 +89,9 @@ export class CurationManageComponent implements OnInit {
 
 
     manageCuratedData(page, size, type, status, source) {
-
-        this.csvURL = `${this._mappingService._exportUrl}?entity-type=${type}&page=${page}&status=${status}&mq=datasource:${source}`
+        let sourceFiter = (source === null) ? '' : `&mq=datasource:${source}`;
+        let statusFiter = (status === '') ? '' : `&status=${status}`;
+        this.csvURL = `${this._mappingService._exportUrl}?entity-type=${type}&page=${page}${statusFiter}${sourceFiter}`
         this.columnHeaders = [];
         this.mappings = [];
         this._mappingService.getManagedTerms(type, source, page, size, status)
