@@ -193,7 +193,7 @@ public class AjaxController {
         } catch (Exception e) {
         }
 
-        int size = 1000;
+        int size = 30000;
         PaginationDTO result = mappingService.search(page, size, entityType.get(), mappingLabel,
                                                      mappingValue, mappedTermLabel.get(), mapType.get(), mappedTermsOnly.get(), status.get());
 
