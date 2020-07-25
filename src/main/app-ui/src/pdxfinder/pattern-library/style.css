@@ -3886,7 +3886,7 @@ body{
 
 .nav-header {
     padding: 33px 25px;
-    background: url("../../assets/icons/image3.jpg") no-repeat;
+    background: url("src/assets/icons/image3.jpg") no-repeat;
 }
 
 .navbar-static-side {
