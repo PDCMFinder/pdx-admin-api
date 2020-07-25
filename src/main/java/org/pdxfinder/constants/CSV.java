@@ -1,4 +1,4 @@
-package org.pdxfinder.services.mapping;
+package org.pdxfinder.constants;
 
 /*
  * Created by abayomi on 22/08/2019.

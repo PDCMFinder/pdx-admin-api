@@ -1,4 +1,4 @@
-package org.pdxfinder.services.mapping;
+package org.pdxfinder.constants;
 
 
 public enum MappingEntityType {

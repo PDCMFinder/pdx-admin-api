@@ -1,4 +1,4 @@
-package org.pdxfinder.controllers;
+package org.pdxfinder.rest;
 
 import org.springframework.http.HttpStatus;
 

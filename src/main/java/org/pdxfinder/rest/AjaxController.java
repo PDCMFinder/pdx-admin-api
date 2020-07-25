@@ -1,12 +1,12 @@
-package org.pdxfinder.controllers;
+package org.pdxfinder.rest;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import org.pdxfinder.services.dto.PaginationDTO;
-import org.pdxfinder.services.mapping.CSVHandler;
+import org.pdxfinder.services.dto.*;
 import org.pdxfinder.data.model.MappingEntity;
+import org.pdxfinder.services.CSVHandler;
 import org.pdxfinder.services.MappingService;
 import org.pdxfinder.services.UtilityService;
 import org.pdxfinder.services.dto.zooma.ZoomaEntity;

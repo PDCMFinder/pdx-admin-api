@@ -1,9 +1,9 @@
-package org.pdxfinder.services.mapping;
+package org.pdxfinder.services;
 
 import org.apache.commons.lang3.StringUtils;
+import org.pdxfinder.constants.CSV;
 import org.pdxfinder.data.model.MappingEntity;
-import org.pdxfinder.services.MappingService;
-import org.pdxfinder.services.UtilityService;
+import org.pdxfinder.constants.MappingEntityType;
 import org.springframework.stereotype.Service;
 
 import java.util.*;

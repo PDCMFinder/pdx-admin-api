@@ -1,4 +1,4 @@
-package org.pdxfinder.services.mapping;
+package org.pdxfinder.services;
 
 import org.pdxfinder.data.model.MappingEntity;
 

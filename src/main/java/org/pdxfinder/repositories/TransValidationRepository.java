@@ -1,4 +1,4 @@
-package org.pdxfinder.data.repositories;
+package org.pdxfinder.repositories;
 
 import org.pdxfinder.data.model.Validation;
 import org.springframework.data.jpa.repository.JpaRepository;
