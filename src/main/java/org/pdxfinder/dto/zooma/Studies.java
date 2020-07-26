@@ -1,4 +1,4 @@
-package org.pdxfinder.services.dto.zooma;
+package org.pdxfinder.dto.zooma;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;

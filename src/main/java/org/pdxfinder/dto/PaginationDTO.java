@@ -1,4 +1,4 @@
-package org.pdxfinder.services.dto;
+package org.pdxfinder.dto;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;

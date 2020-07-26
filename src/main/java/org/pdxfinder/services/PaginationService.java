@@ -1,6 +1,6 @@
 package org.pdxfinder.services;
 
-import org.pdxfinder.services.dto.PaginationDTO;
+import org.pdxfinder.dto.PaginationDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package org.pdxfinder.services.dto.zooma;
+package org.pdxfinder.dto.zooma;
 
 import java.util.List;
 
