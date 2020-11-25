@@ -42,7 +42,7 @@ public class MissingMappingService {
 
     public MappingContainer getMissingMappings() {
 
-
+        missingMappingsContainer = new MappingContainer();
         List<Path> subfolders = getProviderDirs();
         readDataFromTemplates(subfolders);
 
@@ -92,10 +92,11 @@ public class MissingMappingService {
             String tumorTypeName = row.getString("tumour_type");
 
             MappingEntity mappingEntity = mappingService.getDiagnosisMapping(dataSource,diagnosis,primarySiteName, tumorTypeName);
+
             if(mappingEntity == null){
-               missingMappingsContainer.addEntity(
-                       mappingService.saveUnmappedDiagnosis(dataSource, diagnosis, primarySiteName, tumorTypeName)
-               );
+                MappingEntity newUnmappedEntity = mappingService.saveUnmappedDiagnosis(dataSource, diagnosis, primarySiteName, tumorTypeName);
+                if(newUnmappedEntity != null)
+                    missingMappingsContainer.addEntity(newUnmappedEntity);
             }
         }
     }

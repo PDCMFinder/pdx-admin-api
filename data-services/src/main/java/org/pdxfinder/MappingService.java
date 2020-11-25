@@ -707,12 +707,10 @@ public class MappingService {
 
         if (entity == null) {
 
-            entity =  mappingEntityRepository.save(mappingEntity);
-
             log.info("UNMAPPED TERM WAS SAVED: {}", mappingEntity.generateMappingKey());
-
+            return  mappingEntityRepository.save(mappingEntity);
         }
-        return entity;
+        return null;
     }
 
 
