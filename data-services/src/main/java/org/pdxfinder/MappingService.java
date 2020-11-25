@@ -105,7 +105,10 @@ public class MappingService {
         return container.getEntityById(mapKey);
     }
 
-
+    public MappingContainer getInitializedContainer(){
+        if (!INITIALIZED) loadRules("json");
+        return container;
+    }
     public void saveMappingsToFile(String fileName, List<MappingEntity> maprules) {
 
         Map<String, List<MappingEntity>> mappings = new HashMap<>();
@@ -199,15 +202,16 @@ public class MappingService {
 
 
         String json = utilityService.parseFile(file);
-
+        JSONObject row = null;
         try {
             JSONObject job = new JSONObject(json);
+
             if (job.has("mappings")) {
                 JSONArray rows = job.getJSONArray("mappings");
 
 
                 for (int i = 0; i < rows.length(); i++) {
-                    JSONObject row = rows.getJSONObject(i);
+                    row = rows.getJSONObject(i);
 
                     JSONObject mappingVal = row.getJSONObject("mappingValues");
 
@@ -220,7 +224,7 @@ public class MappingService {
                     String mapType = row.getString("mapType");
                     String justification = row.getString("justification");
                     String mappedTermUrl = row.getString("mappedTermUrl");
-                    Long entityId = Long.parseLong(row.getString("entityId"));
+                    Long entityId = row.getLong("entityId");
 
 
                     //if(ds!= null && !ds.toLowerCase().equals(dataSource.toLowerCase())) continue;
@@ -272,6 +276,7 @@ public class MappingService {
 
         } catch (JSONException e) {
             e.printStackTrace();
+            log.error(row.toString());
         }
 
     }
@@ -300,7 +305,7 @@ public class MappingService {
                     String mapType = row.getString("mapType");
                     String justification = row.getString("justification");
                     String mappedTermUrl = row.getString("mappedTermUrl");
-                    Long entityId = Long.parseLong(row.getString("entityId"));
+                    Long entityId = row.getLong("entityId");
 
 
                     if (ontologyTerm.equals("") || ontologyTerm == null) continue;
@@ -668,7 +673,7 @@ public class MappingService {
     }
 
 
-    public void saveUnmappedDiagnosis(String dataSource, String diagnosis, String originTissue, String tumorType) {
+    public MappingEntity saveUnmappedDiagnosis(String dataSource, String diagnosis, String originTissue, String tumorType) {
 
         ArrayList<String> mappingLabels = new ArrayList<>();
         mappingLabels.add("DataSource");
@@ -684,11 +689,11 @@ public class MappingService {
 
         MappingEntity mappingEntity = new MappingEntity(MappingEntityType.diagnosis.get(), mappingLabels, mappingValues);
 
-        saveUnmappedTerms(mappingEntity);
+        return saveUnmappedTerms(mappingEntity);
     }
 
 
-    public void saveUnmappedTerms(MappingEntity mappingEntity) {
+    public MappingEntity saveUnmappedTerms(MappingEntity mappingEntity) {
 
         mappingEntity.setStatus(Status.unmapped.get());
         mappingEntity.setMappedTermLabel("-");
@@ -702,11 +707,12 @@ public class MappingService {
 
         if (entity == null) {
 
-            mappingEntityRepository.save(mappingEntity);
+            entity =  mappingEntityRepository.save(mappingEntity);
 
             log.info("UNMAPPED TERM WAS SAVED: {}", mappingEntity.generateMappingKey());
 
         }
+        return entity;
     }
 
 

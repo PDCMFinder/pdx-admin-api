@@ -4,11 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import org.pdxfinder.*;
 import org.pdxfinder.dto.*;
-import org.pdxfinder.MappingEntity;
-import org.pdxfinder.CSVHandler;
-import org.pdxfinder.MappingService;
-import org.pdxfinder.UtilityService;
 import org.pdxfinder.dto.zooma.ZoomaEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,15 +37,18 @@ public class AjaxController {
     @Autowired
     private UtilityService utilityService;
     private MappingService mappingService;
+    private MissingMappingService missingMappingService;
     private CSVHandler csvHandler;
 
     @Autowired
     public AjaxController(MappingService mappingService,
+                          MissingMappingService missingMappingService,
                           RestTemplateBuilder restTemplateBuilder,
                           CSVHandler csvHandler) {
 
         this.csvHandler = csvHandler;
         this.mappingService = mappingService;
+        this.missingMappingService = missingMappingService;
         this.restTemplate = restTemplateBuilder.build();
     }
 
@@ -97,6 +97,9 @@ public class AjaxController {
     }
 
 
+
+
+
     @GetMapping("/mappings/{entityId}")
     public ResponseEntity<?> getOneMapping(@PathVariable Optional<Integer> entityId) {
 
@@ -111,6 +114,14 @@ public class AjaxController {
     public ResponseEntity<?> getMappingStatSummary(@RequestParam(value = "entity-type", defaultValue = "") Optional<String> entityType) {
         List<Map> result = mappingService.getMappingSummary(entityType.get());
         return new ResponseEntity<Object>(result, HttpStatus.OK);
+    }
+
+    @GetMapping("/getmissingdiagnosismappings")
+    public ResponseEntity<?> getMissingMappings(){
+
+        MappingContainer missingMappings = missingMappingService.getMissingMappings();
+        return new ResponseEntity<>(missingMappings.getEntityList(), HttpStatus.OK);
+
     }
 
     @PutMapping("/mappings")

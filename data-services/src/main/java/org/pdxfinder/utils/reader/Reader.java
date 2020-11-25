@@ -18,10 +18,9 @@ import java.util.stream.Stream;
 public class Reader {
 
     private static final Logger log = LoggerFactory.getLogger(Reader.class);
-    private static final List<String> allowedOmicData = Arrays.asList("cna", "cyto", "mut", "expression");
     private static final List<String> allowedTreatmentData = Arrays.asList("treatment", "drug");
 
-    Map<String, Table> readAllTsvFilesIn(Path targetDirectory, PathMatcher filter) {
+    public Map<String, Table> readAllTsvFilesIn(Path targetDirectory, PathMatcher filter) {
         HashMap<String, Table> tables = new HashMap<>();
         try (final Stream<Path> stream = Files.list(targetDirectory)) {
             stream
@@ -36,20 +35,8 @@ public class Reader {
         return tables;
     }
 
-    Map<String, Table> readAllOmicsFilesIn(Path targetDirectory, PathMatcher filter) {
-        HashMap<String, Optional<Path>> potentialOmicsPaths = new HashMap<>();
-        for (String s : allowedOmicData) { potentialOmicsPaths.put(s, getSubDirectory(targetDirectory, s)); }
 
-        Map<String, Path> availableOmicsPaths = new HashMap<>();
-        potentialOmicsPaths.forEach((k, v) -> v.ifPresent(t -> availableOmicsPaths.put(k, t)));
-
-        Map<String, Table> omicsTables = new HashMap<>();
-        // Only runs once
-        availableOmicsPaths.forEach((k, v) -> omicsTables.putAll(readAllTsvFilesIn(v, filter)));
-        return omicsTables;
-    }
-
-    Map<String, Table> readAllTreatmentFilesIn(Path targetDirectory, PathMatcher filter){
+    public Map<String, Table> readAllTreatmentFilesIn(Path targetDirectory, PathMatcher filter){
 
         HashMap<String, Optional<Path>> potentialTreatmentPaths = new HashMap<>();
         for (String s : allowedTreatmentData) { potentialTreatmentPaths.put(s, getSubDirectory(targetDirectory, s)); }
