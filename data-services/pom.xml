@@ -18,6 +18,20 @@
             <groupId>org.pdxfinder</groupId>
             <artifactId>data-model</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>h2</artifactId>
+                    <groupId>com.h2database</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <!-- WARNING, do not update db engine (stable: 1.4.197) cause compatibility issues, see https://github.com/h2database/h2database/issues/2078 -->
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.197</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
