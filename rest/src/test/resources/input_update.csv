@@ -1,0 +1,2 @@
+Data Id,Origin Tissue,Tumor Type,Sample Diagnosis,Data Source,Mapped Term,Mapped Term URL,Type,Justification,Decision (Yes or No),Valid Term
+1,blood,primary,acute myeloid leukemia,jax,Acute Myeloid Leukemia,http://purl.obolibrary.org/obo/NCIT_C3171,n/a,1,Yes,yes
