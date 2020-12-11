@@ -700,18 +700,6 @@ public class MappingService {
     return mappingEntities;
   }
 
-
-  public void readArchive(String entityType) {
-
-    String jsonKey = "mappings";
-
-    String mappingDirectory = rootDir + "/mapping/backup/" + entityType;
-
-    utilityService.listAllFilesInADirectory(mappingDirectory);
-
-  }
-
-
   public void writeMappingsToFile(String entityType) {
 
     String jsonKey = "mappings";

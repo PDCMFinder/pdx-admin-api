@@ -38,8 +38,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
-@WebMvcTest(AjaxController.class)
-class AjaxControllerTest {
+@WebMvcTest(MappingsController.class)
+class MappingsControllerTest {
 
   private static final int PAGE = 1;
   private static final int SIZE = 10;
@@ -199,7 +199,7 @@ class AjaxControllerTest {
   @Test
   public void testGetMissingMappings() throws Exception {
     MappingContainer mappingContainer = getMappingContainer();;
-    String url = BASE_URL + "getmissingdiagnosismappings";
+    String url = MAPPINGS_URL + "getmissingmappings";
     when(missingMappingService.getMissingMappings()).thenReturn(mappingContainer);
 
     this.mockMvc.perform(get(url))

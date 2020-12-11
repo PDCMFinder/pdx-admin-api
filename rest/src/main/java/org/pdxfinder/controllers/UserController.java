@@ -1,9 +1,7 @@
 package org.pdxfinder.controllers;
 
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.security.Principal;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -12,15 +10,7 @@ import java.util.Map;
  * Created by csaba on 01/08/2018.
  */
 @RestController
-public class MappingController {
-
-
-    @RequestMapping("/mapping")
-    String mapping() {
-
-        return "mapping";
-    }
-
+public class UserController {
 
     @GetMapping("/user")
     public Map<String, Object> user(Principal principal) {

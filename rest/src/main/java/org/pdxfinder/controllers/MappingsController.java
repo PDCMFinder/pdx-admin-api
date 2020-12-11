@@ -18,10 +18,10 @@ import java.util.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
-@RequestMapping("/api")
-public class AjaxController {
+@RequestMapping("/api/mappings")
+public class MappingsController {
 
-  private static final Logger log = LoggerFactory.getLogger(AjaxController.class);
+  private static final Logger log = LoggerFactory.getLogger(MappingsController.class);
   private ObjectMapper mapper = new ObjectMapper();
 
   private final UtilityService utilityService;
@@ -30,7 +30,7 @@ public class AjaxController {
   private final CSVHandler csvHandler;
 
   @Autowired
-  public AjaxController(
+  public MappingsController(
       MappingService mappingService,
       MissingMappingService missingMappingService,
       UtilityService utilityService,
@@ -59,7 +59,7 @@ public class AjaxController {
    * @param size            - Allows client to submit size limit values e.g ...?size=5
    * @return - Mapping Entities with data count, offset and limit Values
    */
-  @GetMapping("/mappings")
+  @GetMapping
   public ResponseEntity<?> getMappings(@RequestParam("mq") Optional<String> mappingQuery,
       @RequestParam(value = "mapped-term", defaultValue = "") Optional<String> mappedTermLabel,
       @RequestParam(value = "map-terms-only", defaultValue = "") Optional<String> mappedTermsOnly,
@@ -86,7 +86,7 @@ public class AjaxController {
     return new ResponseEntity<Object>(result, HttpStatus.OK);
   }
 
-  @GetMapping("/mappings/{entityId}")
+  @GetMapping("{entityId}")
   public ResponseEntity<?> getOneMapping(@PathVariable Optional<Integer> entityId) {
 
     if (entityId.isPresent()) {
@@ -97,14 +97,14 @@ public class AjaxController {
         HttpStatus.BAD_REQUEST);
   }
 
-  @GetMapping("/mappings/summary")
+  @GetMapping("summary")
   public ResponseEntity<?> getMappingStatSummary(
       @RequestParam(value = "entity-type", defaultValue = "") Optional<String> entityType) {
     List<Map> result = mappingService.getMappingSummary(entityType.get());
     return new ResponseEntity<Object>(result, HttpStatus.OK);
   }
 
-  @GetMapping("/getmissingdiagnosismappings")
+  @GetMapping("getmissingmappings")
   public ResponseEntity<?> getMissingMappings() {
 
     MappingContainer missingMappings = missingMappingService.getMissingMappings();
@@ -112,7 +112,7 @@ public class AjaxController {
 
   }
 
-  @PutMapping("/mappings")
+  @PutMapping
   public ResponseEntity<?> editListOfEntityMappings(
       @RequestBody List<MappingEntity> submittedEntities) {
 
@@ -126,13 +126,7 @@ public class AjaxController {
     return new ResponseEntity<>(updated, HttpStatus.OK);
   }
 
-  @GetMapping("/mappings/archive")
-  public ResponseEntity<?> readArchive(@RequestParam("entity-type") String entityType) {
-    mappingService.readArchive(entityType);
-    return new ResponseEntity<>("", HttpStatus.OK);
-  }
-
-  @PostMapping("/mappings/uploads")
+  @PostMapping("uploads")
   public ResponseEntity<?> uploadData(
       @RequestParam("uploads") Optional<MultipartFile> uploads,
       @RequestParam(value = "entity-type", defaultValue = "") Optional<String> entityType) {
@@ -171,7 +165,7 @@ public class AjaxController {
 //    }
 
 
-  @GetMapping("/mappings/export")
+  @GetMapping("export")
   @ResponseBody
   public Object exportMappingData(HttpServletResponse response,
       @RequestParam("mq") Optional<String> mappingQuery,
