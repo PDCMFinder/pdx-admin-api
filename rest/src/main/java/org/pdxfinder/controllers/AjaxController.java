@@ -6,19 +6,15 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import org.pdxfinder.*;
 import org.pdxfinder.dto.*;
-import org.pdxfinder.dto.zooma.ZoomaEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
-
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -27,31 +23,24 @@ public class AjaxController {
 
   private static final Logger log = LoggerFactory.getLogger(AjaxController.class);
   private ObjectMapper mapper = new ObjectMapper();
-  private RestTemplate restTemplate;
-  private String homeDir = System.getProperty("user.home");
 
-  private static final String ZOOMA_URL = "http://scrappy.ebi.ac.uk:8080/annotations";
-  private String errReport = "";
-
-
-  @Autowired
-  private UtilityService utilityService;
-  private MappingService mappingService;
-  private MissingMappingService missingMappingService;
-  private CSVHandler csvHandler;
+  private final UtilityService utilityService;
+  private final MappingService mappingService;
+  private final MissingMappingService missingMappingService;
+  private final CSVHandler csvHandler;
 
   @Autowired
-  public AjaxController(MappingService mappingService,
+  public AjaxController(
+      MappingService mappingService,
       MissingMappingService missingMappingService,
-      RestTemplateBuilder restTemplateBuilder,
+      UtilityService utilityService,
       CSVHandler csvHandler) {
+    this.utilityService = utilityService;
 
     this.csvHandler = csvHandler;
     this.mappingService = mappingService;
     this.missingMappingService = missingMappingService;
-    this.restTemplate = restTemplateBuilder.build();
   }
-
 
   /**
    * Provides entry point to query the MappingEntity data store E.g :
@@ -88,8 +77,6 @@ public class AjaxController {
       String[] query = mappingQuery.get().split(":");
       mappingLabel = query[0];
       mappingValue = Arrays.asList(query[1].trim());
-
-
     } catch (Exception e) {
     }
 
@@ -98,7 +85,6 @@ public class AjaxController {
 
     return new ResponseEntity<Object>(result, HttpStatus.OK);
   }
-
 
   @GetMapping("/mappings/{entityId}")
   public ResponseEntity<?> getOneMapping(@PathVariable Optional<Integer> entityId) {
@@ -140,13 +126,11 @@ public class AjaxController {
     return new ResponseEntity<>(updated, HttpStatus.OK);
   }
 
-
   @GetMapping("/mappings/archive")
   public ResponseEntity<?> readArchive(@RequestParam("entity-type") String entityType) {
     mappingService.readArchive(entityType);
     return new ResponseEntity<>("", HttpStatus.OK);
   }
-
 
   @PostMapping("/mappings/uploads")
   public ResponseEntity<?> uploadData(
@@ -252,90 +236,6 @@ public class AjaxController {
     return csvReport;
   }
 
-
-  /****************************************************************
-   *                   INTERACTIONS WITH ZOOMA                    *
-   ****************************************************************/
-
-
-  @GetMapping("/zooma/transform")
-  public ResponseEntity<?> transformAnnotationForZooma() {
-
-    List<ZoomaEntity> zoomaEntities = mappingService.transformMappingsForZooma();
-
-    return new ResponseEntity<>(zoomaEntities, HttpStatus.OK);
-  }
-
-
-  @GetMapping("/zooma")
-  public ResponseEntity<?> writeAllAnnotationsToZooma() {
-
-    Map report = new LinkedHashMap();
-    List<ZoomaEntity> zoomaEntities = mappingService.transformMappingsForZooma();
-
-    int count = 0;
-    List<ZoomaEntity> failedList = new ArrayList<>();
-    for (ZoomaEntity zoomaEntity : zoomaEntities) {
-
-      String entity = zoomaEntity.getBiologicalEntities().getBioEntity() + "__" + count++;
-      if (writeToZooma(zoomaEntity)) {
-
-        report.put(entity, "SUCCESS WRITE");
-      } else {
-
-        report.put(entity, "THIS ANNOTATION WAS NOT WRITTEN TO ZOOMA");
-        failedList.add(zoomaEntity);
-      }
-    }
-
-    /* LOG FAILED OBJECTS TO FILE */
-    String failedReport = "";
-    try {
-      failedReport = mapper.writeValueAsString(failedList);
-    } catch (Exception e) {
-    }
-
-    String failedReportFile = homeDir + "/Documents/" + (new Date()) + "_failed.json";
-    String errorReportFile = homeDir + "/Documents/" + (new Date()) + "_error.txt";
-
-    utilityService.writeToFile(failedReport, failedReportFile, true);
-    utilityService.writeToFile(this.errReport, errorReportFile, true);
-
-    return new ResponseEntity<>(report, HttpStatus.OK);
-  }
-
-
-  public Boolean writeToZooma(ZoomaEntity zoomaEntity) {
-
-    HttpEntity<String> entity = BuildHttpHeader();
-    HttpEntity<Object> req = new HttpEntity<>(zoomaEntity, entity.getHeaders());
-    Map result = new HashMap();
-
-    Boolean report = false;
-    try {
-      result = restTemplate.postForObject(ZOOMA_URL, req, Map.class);
-      report = true;
-    } catch (Exception e) {
-
-      this.errReport += "\n\n ************************ NEW ERROR LOG " + (new Date())
-          + " *********************** \n" + e;
-    }
-
-    return report;
-  }
-
-
-  public HttpEntity<String> BuildHttpHeader() {
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-    headers.add("Content-Type", "application/json");
-    HttpEntity<String> entity = new HttpEntity<>("parameters", headers);
-
-    return entity;
-  }
-
-
   public List validateEntities(List<MappingEntity> mappingEntities) {
 
     List<Error> errors = new ArrayList<>();
@@ -350,6 +250,5 @@ public class AjaxController {
     }
     return errors;
   }
-
 
 }
