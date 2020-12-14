@@ -97,7 +97,7 @@ class MappingsControllerTest {
   }
 
   @Test
-  public void testGetMappings() throws Exception {
+  public void given_mappingsExist_when_mappingsSearchedAndSeveralMatch_then_returnMatchedMappings() throws Exception {
     PaginationDTO paginationDTO = new PaginationDTO();
     paginationDTO.setPage(PAGE);
     paginationDTO.setSize(SIZE);
@@ -133,7 +133,8 @@ class MappingsControllerTest {
   }
 
   @Test
-  public void testGetOneMapping() throws Exception {
+  public void given_mappingsExist_when_oneMappingSearched_then_returnMatchedMapping()
+  throws Exception {
     MappingEntity mappingEntity = new MappingEntity();
     mappingEntity.setEntityId(ENTITY_ID);
     mappingEntity.setEntityType(ENTITY_TYPE);
@@ -147,7 +148,6 @@ class MappingsControllerTest {
     mappingEntity.setSuggestedMappings(SUGGESTED_MAPPINGS);
 
     String url = MAPPINGS_URL + ENTITY_ID;
-    System.out.println(url);
     when(mappingService.getMappingEntityById((int) ENTITY_ID)).thenReturn(mappingEntity);
 
     this.mockMvc.perform(get(url))
@@ -166,7 +166,8 @@ class MappingsControllerTest {
   }
 
   @Test
-  public void testGetMappingStatSummary() throws Exception {
+  public void given_mappingSummariesExist_when_oneSummaryTypeSearched_then_returnMappingSummariesByType()
+  throws Exception {
     String url = MAPPINGS_URL + "summary?entity-type=" + ENTITY_TYPE;
     List<Map> mappingSummary = getMappingSummary();
     System.out.println(url);
@@ -197,7 +198,8 @@ class MappingsControllerTest {
   }
 
   @Test
-  public void testGetMissingMappings() throws Exception {
+  public void given_missingMappingsExist_when_getMissingMappingsIsRequested_then_returnMissingMappings()
+  throws Exception {
     MappingContainer mappingContainer = getMappingContainer();;
     String url = MAPPINGS_URL + "getmissingmappings";
     when(missingMappingService.getMissingMappings()).thenReturn(mappingContainer);
@@ -218,7 +220,7 @@ class MappingsControllerTest {
   }
 
   @Test
-  public void testEditListOfEntityMappings() throws Exception {
+  public void given_mappingEntitiesExist_when_entitiesEdited_then_returnEditedMappings() throws Exception {
     String url = MAPPINGS_URL;
     List<MappingEntity> submittedEntities = new ArrayList<>();
     submittedEntities.add(getMappingEntity());
@@ -245,7 +247,7 @@ class MappingsControllerTest {
   }
 
   @Test
-  public void testUploadData() throws Exception {
+  public void given_dataIsValid_when_entitiesUpdatedByCsv_then_returnEditedMappings() throws Exception {
     String url = MAPPINGS_URL + "uploads?entity-type=diagnosis";
     String CSV_INPUT = "input_update.csv";
     this.getClass().getResourceAsStream(CSV_INPUT);
@@ -282,7 +284,7 @@ class MappingsControllerTest {
 
   @Disabled
   @Test
-  public void testExportMappingData() throws Exception {
+  public void given_mappingEntitiesExist_when_mappingEntitiesExported_then_returnMatchingEntities() throws Exception {
     List<MappingEntity> mappingEntities = new ArrayList<>();
     mappingEntities.add(getMappingEntity());
     String url = MAPPINGS_URL + "export"

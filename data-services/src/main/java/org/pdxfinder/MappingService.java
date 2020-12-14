@@ -892,14 +892,6 @@ public class MappingService {
     return savedEntities;
   }
 
-//    @Cacheable("ontologies")
-//    public List<OntologyTerm> getOntologyTermsByType(String type) {
-//
-//        return ontologyTermRepository.findByType(type);
-//
-//    }
-
-
   public List<MappingEntity> processUploadedCSV(List<Map<String, String>> csvData) {
 
     List<MappingEntity> savedEntities = new ArrayList<>();
