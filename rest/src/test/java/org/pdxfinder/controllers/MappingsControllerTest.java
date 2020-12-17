@@ -282,11 +282,11 @@ class MappingsControllerTest {
         .andExpect(jsonPath("$[0].suggestedMappings", is(SUGGESTED_MAPPINGS)));
   }
 
-  @Disabled
   @Test
   public void given_mappingEntitiesExist_when_mappingEntitiesExported_then_returnMatchingEntities() throws Exception {
     List<MappingEntity> mappingEntities = new ArrayList<>();
-    mappingEntities.add(getMappingEntity());
+    MappingEntity mockedMappingEntity = getMappingEntity();
+    mappingEntities.add(mockedMappingEntity);
     String url = MAPPINGS_URL + "export"
         + "?mq=" + MAPPING_LABEL + ":" + MAPPING_VALUE
         + "&entity-type=" + ENTITY_TYPE
@@ -314,20 +314,25 @@ class MappingsControllerTest {
         MAP_TYPE,
         MAPPED_TERMS_ONLY,
         STATUS_LIST)).thenReturn(paginationDTO);
+    List<String> csvHead = Arrays.asList(
+        "Data Id",
+        "Origin Tissue",
+        "Tumor Type",
+        "Sample Diagnosis",
+        "Data Source",
+        "Mapped Term",
+        "Mapped Term URL",
+        "Type",
+        "Justification",
+        "Decision (Yes or No)",
+        "Valid Term");
+    when(csvHandler.getMappingEntityCSVHead(mockedMappingEntity)).thenReturn(csvHead);
+    List<List<String>> mappingDataCSV = new ArrayList<>();
+    when(csvHandler.prepareMappingEntityForCSV(mappingEntities)).thenReturn(mappingDataCSV);
 
     this.mockMvc.perform(get(url))
         .andDo(print())
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.entityId", is((int) ENTITY_ID)))
-        .andExpect(jsonPath("$.entityType", is(ENTITY_TYPE)))
-        .andExpect(jsonPath("$.mappingLabels", is(MAPPING_LABEL_LIST)))
-        .andExpect(jsonPath("$.mappingValues", is(MAPPING_VALUE_MAP)))
-        .andExpect(jsonPath("$.mappedTermLabel", is(MAPPED_TERM_LABEL)))
-        .andExpect(jsonPath("$.mappedTermUrl", is(MAPPED_TERM_URL)))
-        .andExpect(jsonPath("$.mapType", is(MAP_TYPE)))
-        .andExpect(jsonPath("$.justification", is(JUSTIFICATION)))
-        .andExpect(jsonPath("$.status", is(STATUS)))
-        .andExpect(jsonPath("$.suggestedMappings", is(SUGGESTED_MAPPINGS)));
+        .andExpect(status().isOk());
   }
 
   private MappingContainer getMappingContainer() {
