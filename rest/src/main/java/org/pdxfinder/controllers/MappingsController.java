@@ -162,11 +162,11 @@ public class MappingsController {
   public Object exportMappingData(
       HttpServletResponse response,
       @RequestParam("mq") Optional<String> mappingQuery,
-      @RequestParam(value = "mapped-term", defaultValue = "") Optional<String> mappedTermLabel,
-      @RequestParam(value = "map-terms-only", defaultValue = "") Optional<String> mappedTermsOnly,
-      @RequestParam(value = "entity-type", defaultValue = "0") Optional<List<String>> entityType,
-      @RequestParam(value = "map-type", defaultValue = "") Optional<String> mapType,
-      @RequestParam(value = "status", defaultValue = "0") Optional<List<String>> status,
+      @RequestParam(value = "mapped-term", defaultValue = "") String mappedTermLabel,
+      @RequestParam(value = "map-terms-only", defaultValue = "") String mappedTermsOnly,
+      @RequestParam(value = "entity-type", defaultValue = "0") List<String> entityType,
+      @RequestParam(value = "map-type", defaultValue = "") String mapType,
+      @RequestParam(value = "status", defaultValue = "0") List<String> status,
       @RequestParam(value = "page", defaultValue = "1") Integer page) {
 
     String mappingLabel = "";
@@ -183,13 +183,13 @@ public class MappingsController {
     PaginationDTO result = mappingService.search(
         page,
         size,
-        entityType.get(),
+        entityType,
         mappingLabel,
         mappingValue,
-        mappedTermLabel.get(),
-        mapType.get(),
-        mappedTermsOnly.get(),
-        status.get());
+        mappedTermLabel,
+        mapType,
+        mappedTermsOnly,
+        status);
 
     List<MappingEntity> mappingEntities =
         (List<MappingEntity>) result.getAdditionalProperties().get("mappings");
