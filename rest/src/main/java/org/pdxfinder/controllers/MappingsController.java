@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
@@ -22,7 +21,7 @@ import java.util.*;
 public class MappingsController {
 
   private static final Logger log = LoggerFactory.getLogger(MappingsController.class);
-  private ObjectMapper mapper = new ObjectMapper();
+  private final ObjectMapper mapper = new ObjectMapper();
 
   private final UtilityService utilityService;
   private final MappingService mappingService;
@@ -36,7 +35,6 @@ public class MappingsController {
       UtilityService utilityService,
       CSVHandler csvHandler) {
     this.utilityService = utilityService;
-
     this.csvHandler = csvHandler;
     this.mappingService = mappingService;
     this.missingMappingService = missingMappingService;
@@ -60,7 +58,8 @@ public class MappingsController {
    * @return - Mapping Entities with data count, offset and limit Values
    */
   @GetMapping
-  public ResponseEntity<?> getMappings(@RequestParam("mq") Optional<String> mappingQuery,
+  public ResponseEntity<?> getMappings(
+      @RequestParam("mq") Optional<String> mappingQuery,
       @RequestParam(value = "mapped-term", defaultValue = "") Optional<String> mappedTermLabel,
       @RequestParam(value = "map-terms-only", defaultValue = "") Optional<String> mappedTermsOnly,
       @RequestParam(value = "entity-type", defaultValue = "0") Optional<List<String>> entityType,
@@ -128,8 +127,7 @@ public class MappingsController {
 
   @PostMapping("uploads")
   public ResponseEntity<?> uploadData(
-      @RequestParam("uploads") Optional<MultipartFile> uploads,
-      @RequestParam(value = "entity-type", defaultValue = "") Optional<String> entityType) {
+      @RequestParam("uploads") Optional<MultipartFile> uploads) {
 
     Object responseBody = "";
     HttpStatus responseStatus = HttpStatus.OK;
@@ -230,14 +228,10 @@ public class MappingsController {
     return csvReport;
   }
 
-  public List validateEntities(List<MappingEntity> mappingEntities) {
-
+  public List<Error> validateEntities(List<MappingEntity> mappingEntities) {
     List<Error> errors = new ArrayList<>();
-
     for (MappingEntity me : mappingEntities) {
-
       if (!mappingService.checkExistence(me.getEntityId())) {
-
         Error error = new Error("Entity " + me.getEntityId() + " Not Found", HttpStatus.NOT_FOUND);
         errors.add(error);
       }
