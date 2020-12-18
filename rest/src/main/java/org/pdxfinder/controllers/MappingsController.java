@@ -157,23 +157,16 @@ public class MappingsController {
     return new ResponseEntity<>(responseBody, responseStatus);
   }
 
-//    @GetMapping("/mappings/ontologies")
-//    public Object getOntologies(@RequestParam(value = "type", defaultValue = "diagnosis") Optional<String> dataType){
-//
-//        String entityType = dataType.get();
-//        return mappingService.getOntologyTermsByType(entityType);
-//    }
-
-
   @GetMapping("export")
   @ResponseBody
-  public Object exportMappingData(HttpServletResponse response,
+  public Object exportMappingData(
+      HttpServletResponse response,
       @RequestParam("mq") Optional<String> mappingQuery,
-      @RequestParam(value = "mapped-term", defaultValue = "") Optional<String> mappedTermLabel,
-      @RequestParam(value = "map-terms-only", defaultValue = "") Optional<String> mappedTermsOnly,
-      @RequestParam(value = "entity-type", defaultValue = "0") Optional<List<String>> entityType,
-      @RequestParam(value = "map-type", defaultValue = "") Optional<String> mapType,
-      @RequestParam(value = "status", defaultValue = "0") Optional<List<String>> status,
+      @RequestParam(value = "mapped-term", defaultValue = "") String mappedTermLabel,
+      @RequestParam(value = "map-terms-only", defaultValue = "") String mappedTermsOnly,
+      @RequestParam(value = "entity-type", defaultValue = "0") List<String> entityType,
+      @RequestParam(value = "map-type", defaultValue = "") String mapType,
+      @RequestParam(value = "status", defaultValue = "0") List<String> status,
       @RequestParam(value = "page", defaultValue = "1") Integer page) {
 
     String mappingLabel = "";
@@ -187,17 +180,24 @@ public class MappingsController {
     }
 
     int size = 30000;
-    PaginationDTO result = mappingService.search(page, size, entityType.get(), mappingLabel,
-        mappingValue, mappedTermLabel.get(), mapType.get(), mappedTermsOnly.get(), status.get());
+    PaginationDTO result = mappingService.search(
+        page,
+        size,
+        entityType,
+        mappingLabel,
+        mappingValue,
+        mappedTermLabel,
+        mapType,
+        mappedTermsOnly,
+        status);
 
-    List<MappingEntity> mappingEntities = mapper
-        .convertValue(result.getAdditionalProperties().get("mappings"), List.class);
-
+    List<MappingEntity> mappingEntities =
+        (List<MappingEntity>) result.getAdditionalProperties().get("mappings");
     /*
      *  Get Mapping Entity CSV Header
      */
     MappingEntity me = mappingEntities.get(0);
-    List<String> csvHead = csvHandler.getMappingEntityCSVHead(mappingEntities.get(0));
+    List<String> csvHead = csvHandler.getMappingEntityCSVHead(me);
 
     /*
      *  Get Mapping Entity CSV Data Body
