@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import org.apache.commons.lang3.tuple.Pair;
 import org.pdxfinder.*;
 import org.pdxfinder.dto.*;
 import org.slf4j.Logger;
@@ -12,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
@@ -22,12 +22,13 @@ import java.util.*;
 public class MappingsController {
 
   private static final Logger log = LoggerFactory.getLogger(MappingsController.class);
-  private ObjectMapper mapper = new ObjectMapper();
-
+  private final ObjectMapper mapper = new ObjectMapper();
   private final UtilityService utilityService;
   private final MappingService mappingService;
   private final MissingMappingService missingMappingService;
   private final CSVHandler csvHandler;
+
+  private static final String MAPPING_VALUE_SEPARATOR = ":";
 
   @Autowired
   public MappingsController(
@@ -36,7 +37,6 @@ public class MappingsController {
       UtilityService utilityService,
       CSVHandler csvHandler) {
     this.utilityService = utilityService;
-
     this.csvHandler = csvHandler;
     this.mappingService = mappingService;
     this.missingMappingService = missingMappingService;
@@ -60,28 +60,30 @@ public class MappingsController {
    * @return - Mapping Entities with data count, offset and limit Values
    */
   @GetMapping
-  public ResponseEntity<?> getMappings(@RequestParam("mq") Optional<String> mappingQuery,
-      @RequestParam(value = "mapped-term", defaultValue = "") Optional<String> mappedTermLabel,
-      @RequestParam(value = "map-terms-only", defaultValue = "") Optional<String> mappedTermsOnly,
-      @RequestParam(value = "entity-type", defaultValue = "0") Optional<List<String>> entityType,
-      @RequestParam(value = "map-type", defaultValue = "") Optional<String> mapType,
-      @RequestParam(value = "status", defaultValue = "0") Optional<List<String>> status,
-
+  public ResponseEntity<?> getMappings(
+      @RequestParam(value = "mq", defaultValue = "") String mappingQuery,
+      @RequestParam(value = "mapped-term", defaultValue = "") String mappedTermLabel,
+      @RequestParam(value = "map-terms-only", defaultValue = "") String mappedTermsOnly,
+      @RequestParam(value = "entity-type", defaultValue = "0") List<String> entityType,
+      @RequestParam(value = "map-type", defaultValue = "") String mapType,
+      @RequestParam(value = "status", defaultValue = "0") List<String> status,
       @RequestParam(value = "page", defaultValue = "1") Integer page,
       @RequestParam(value = "size", defaultValue = "10") Integer size) {
 
-    String mappingLabel = "";
-    List<String> mappingValue = Arrays.asList("0");
+    Pair<String, List<String>> mappingLabelAndValue = getMappingLabelAndValue(mappingQuery);
+    String mappingLabel = mappingLabelAndValue.getKey();
+    List<String> mappingValue = mappingLabelAndValue.getValue();
 
-    try {
-      String[] query = mappingQuery.get().split(":");
-      mappingLabel = query[0];
-      mappingValue = Arrays.asList(query[1].trim());
-    } catch (Exception e) {
-    }
-
-    PaginationDTO result = mappingService.search(page, size, entityType.get(), mappingLabel,
-        mappingValue, mappedTermLabel.get(), mapType.get(), mappedTermsOnly.get(), status.get());
+    PaginationDTO result = mappingService.search(
+        page,
+        size,
+        entityType,
+        mappingLabel,
+        mappingValue,
+        mappedTermLabel,
+        mapType,
+        mappedTermsOnly,
+        status);
 
     return new ResponseEntity<Object>(result, HttpStatus.OK);
   }
@@ -99,17 +101,15 @@ public class MappingsController {
 
   @GetMapping("summary")
   public ResponseEntity<?> getMappingStatSummary(
-      @RequestParam(value = "entity-type", defaultValue = "") Optional<String> entityType) {
-    List<Map> result = mappingService.getMappingSummary(entityType.get());
+      @RequestParam(value = "entity-type", defaultValue = "") String entityType) {
+    List<Map> result = mappingService.getMappingSummary(entityType);
     return new ResponseEntity<Object>(result, HttpStatus.OK);
   }
 
   @GetMapping("getmissingmappings")
   public ResponseEntity<?> getMissingMappings() {
-
     MappingContainer missingMappings = missingMappingService.getMissingMappings();
     return new ResponseEntity<>(missingMappings.getEntityList(), HttpStatus.OK);
-
   }
 
   @PutMapping
@@ -128,8 +128,7 @@ public class MappingsController {
 
   @PostMapping("uploads")
   public ResponseEntity<?> uploadData(
-      @RequestParam("uploads") Optional<MultipartFile> uploads,
-      @RequestParam(value = "entity-type", defaultValue = "") Optional<String> entityType) {
+      @RequestParam("uploads") Optional<MultipartFile> uploads) {
 
     Object responseBody = "";
     HttpStatus responseStatus = HttpStatus.OK;
@@ -161,7 +160,7 @@ public class MappingsController {
   @ResponseBody
   public Object exportMappingData(
       HttpServletResponse response,
-      @RequestParam("mq") Optional<String> mappingQuery,
+      @RequestParam(value = "mq", defaultValue = "") String mappingQuery,
       @RequestParam(value = "mapped-term", defaultValue = "") String mappedTermLabel,
       @RequestParam(value = "map-terms-only", defaultValue = "") String mappedTermsOnly,
       @RequestParam(value = "entity-type", defaultValue = "0") List<String> entityType,
@@ -169,15 +168,9 @@ public class MappingsController {
       @RequestParam(value = "status", defaultValue = "0") List<String> status,
       @RequestParam(value = "page", defaultValue = "1") Integer page) {
 
-    String mappingLabel = "";
-    List<String> mappingValue = Arrays.asList("0");
-
-    try {
-      String[] query = mappingQuery.get().split(":");
-      mappingLabel = mappingQuery.get().split(":")[0];
-      mappingValue = Arrays.asList(query[1].trim());
-    } catch (Exception e) {
-    }
+    Pair<String, List<String>> mappingLabelAndValue = getMappingLabelAndValue(mappingQuery);
+    String mappingLabel = mappingLabelAndValue.getKey();
+    List<String> mappingValue = mappingLabelAndValue.getValue();
 
     int size = 30000;
     PaginationDTO result = mappingService.search(
@@ -226,23 +219,32 @@ public class MappingsController {
     } catch (Exception e) {
 
     }
-
     return csvReport;
   }
 
-  public List validateEntities(List<MappingEntity> mappingEntities) {
-
+  public List<Error> validateEntities(List<MappingEntity> mappingEntities) {
     List<Error> errors = new ArrayList<>();
-
     for (MappingEntity me : mappingEntities) {
-
       if (!mappingService.checkExistence(me.getEntityId())) {
-
         Error error = new Error("Entity " + me.getEntityId() + " Not Found", HttpStatus.NOT_FOUND);
         errors.add(error);
       }
     }
     return errors;
+  }
+
+  Pair<String, List<String>> getMappingLabelAndValue(String query) {
+    String mappingLabel = "";
+    List<String> mappingValue = Arrays.asList("0");
+    
+    if (query.indexOf(MAPPING_VALUE_SEPARATOR) > 0) {
+      String[] elements = query.split(MAPPING_VALUE_SEPARATOR);
+      if (elements.length == 2) {
+        mappingLabel = elements[0].trim();
+        mappingValue = Arrays.asList(elements[1].trim());
+      }
+    }
+    return Pair.of(mappingLabel, mappingValue);
   }
 
 }
