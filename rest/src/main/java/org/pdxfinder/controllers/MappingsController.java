@@ -22,7 +22,6 @@ public class MappingsController {
 
   private static final Logger log = LoggerFactory.getLogger(MappingsController.class);
   private final ObjectMapper mapper = new ObjectMapper();
-
   private final UtilityService utilityService;
   private final MappingService mappingService;
   private final MissingMappingService missingMappingService;
@@ -79,8 +78,16 @@ public class MappingsController {
     } catch (Exception e) {
     }
 
-    PaginationDTO result = mappingService.search(page, size, entityType.get(), mappingLabel,
-        mappingValue, mappedTermLabel.get(), mapType.get(), mappedTermsOnly.get(), status.get());
+    PaginationDTO result = mappingService.search(
+        page,
+        size,
+        entityType.get(),
+        mappingLabel,
+        mappingValue,
+        mappedTermLabel.get(),
+        mapType.get(),
+        mappedTermsOnly.get(),
+        status.get());
 
     return new ResponseEntity<Object>(result, HttpStatus.OK);
   }
@@ -105,10 +112,8 @@ public class MappingsController {
 
   @GetMapping("getmissingmappings")
   public ResponseEntity<?> getMissingMappings() {
-
     MappingContainer missingMappings = missingMappingService.getMissingMappings();
     return new ResponseEntity<>(missingMappings.getEntityList(), HttpStatus.OK);
-
   }
 
   @PutMapping
@@ -224,7 +229,6 @@ public class MappingsController {
     } catch (Exception e) {
 
     }
-
     return csvReport;
   }
 
