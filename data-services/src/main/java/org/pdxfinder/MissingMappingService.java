@@ -55,6 +55,7 @@ public class MissingMappingService {
         for (Path p : folders) {
             Map<String, Table> metaDataTemplate = reader.readAllTsvFilesIn(p, metadataFile);
             metaDataTemplate = tableSetCleaner.cleanPdxTables(metaDataTemplate);
+            log.info(p.toString());
             getDiagnosisAttributesFromTemplate(metaDataTemplate);
         }
     }
@@ -78,26 +79,30 @@ public class MissingMappingService {
     }
 
     public void getDiagnosisAttributesFromTemplate(Map<String, Table> tables) {
+        try {
+            Table loaderTable = tables.get("metadata-loader.tsv");
+            Row loaderRow = loaderTable.row(0);
+            String dataSource = loaderRow.getString("abbreviation");
 
-        Table loaderTable = tables.get("metadata-loader.tsv");
-        Row loaderRow = loaderTable.row(0);
-        String dataSource = loaderRow.getString("abbreviation");
+            Table sampleTable = tables.get("metadata-sample.tsv");
 
-        Table sampleTable = tables.get("metadata-sample.tsv");
+            for (Row row : sampleTable) {
 
-        for (Row row : sampleTable) {
+                String primarySiteName = row.getString("primary_site");
+                String diagnosis = row.getString("diagnosis");
+                String tumorTypeName = row.getString("tumour_type");
 
-            String primarySiteName = row.getString("primary_site");
-            String diagnosis = row.getString("diagnosis");
-            String tumorTypeName = row.getString("tumour_type");
+                MappingEntity mappingEntity = mappingService.getDiagnosisMapping(dataSource, diagnosis, primarySiteName, tumorTypeName);
 
-            MappingEntity mappingEntity = mappingService.getDiagnosisMapping(dataSource,diagnosis,primarySiteName, tumorTypeName);
-
-            if(mappingEntity == null){
-                MappingEntity newUnmappedEntity = mappingService.saveUnmappedDiagnosis(dataSource, diagnosis, primarySiteName, tumorTypeName);
-                if(newUnmappedEntity != null)
-                    missingMappingsContainer.addEntity(newUnmappedEntity);
+                if (mappingEntity == null) {
+                    MappingEntity newUnmappedEntity = mappingService.saveUnmappedDiagnosis(dataSource, diagnosis, primarySiteName, tumorTypeName);
+                    if (newUnmappedEntity != null)
+                        missingMappingsContainer.addEntity(newUnmappedEntity);
+                }
             }
+        }
+        catch (Exception e){
+            log.error("Exception while getting data from provider.");
         }
     }
 }
