@@ -593,7 +593,7 @@ public class MappingService {
     return dla.execute(key1, key2);
   }
 
-  public void saveUnmappedTreatment(String dataSource, String treatment) {
+  public MappingEntity saveUnmappedTreatment(String dataSource, String treatment) {
 
     List<String> mappingLabels = Arrays.asList("DataSource", "TreatmentName");
 
@@ -604,7 +604,7 @@ public class MappingService {
     MappingEntity mappingEntity = new MappingEntity(MappingEntityType.treatment.get(),
         mappingLabels, mappingValues);
 
-    saveUnmappedTerms(mappingEntity);
+    return saveUnmappedTerms(mappingEntity);
   }
 
 

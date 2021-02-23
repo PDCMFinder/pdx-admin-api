@@ -58,6 +58,17 @@ public class MissingMappingService {
             log.info(p.toString());
             getDiagnosisAttributesFromTemplate(metaDataTemplate);
         }
+
+        PathMatcher drugDataFile = FileSystems.getDefault().getPathMatcher("glob:**{drug,treatment}*.tsv");
+        for (Path p : folders) {
+            Map<String, Table> drugDataTemplate = reader.readAllTreatmentFilesIn(p, drugDataFile);
+            drugDataTemplate = tableSetCleaner.cleanPdxTables(drugDataTemplate);
+            log.info(p.toString());
+            getTreatmentAttributesFromTemplate(drugDataTemplate);
+        }
+
+
+
     }
 
     public List<Path> getProviderDirs() {
@@ -102,7 +113,35 @@ public class MissingMappingService {
             }
         }
         catch (Exception e){
-            log.error("Exception while getting data from provider.");
+            log.error("Exception while getting diagnosis data from provider.");
         }
     }
+
+
+
+    public void getTreatmentAttributesFromTemplate(Map<String, Table> tables){
+
+        try {
+            Table drugTable = tables.get("drugdosing-Sheet1.tsv");
+            if(drugTable == null) return;
+
+            for (Row row : drugTable) {
+                String abbreviation = row.getString("abbreviation");
+                String treatmentName = row.getString("treatment_name");
+
+                MappingEntity mappingEntity = mappingService.getTreatmentMapping(abbreviation, treatmentName);
+
+                if (mappingEntity == null) {
+                    MappingEntity newUnmappedEntity = mappingService.saveUnmappedTreatment(abbreviation, treatmentName);
+                    if (newUnmappedEntity != null)
+                        missingMappingsContainer.addEntity(newUnmappedEntity);
+                }
+            }
+        }
+        catch (Exception e){
+            log.error("Exception while getting treatment data from provider");
+        }
+    }
+
+
 }
