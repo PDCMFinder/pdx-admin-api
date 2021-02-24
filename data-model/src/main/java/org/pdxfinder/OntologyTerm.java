@@ -25,9 +25,10 @@ public class OntologyTerm {
     public OntologyTerm() {
     }
 
-    public OntologyTerm(String url, String label) {
+    public OntologyTerm(String url, String label, String type) {
         this.url = url;
         this.label = label;
+        this.type = type;
         this.synonyms = new HashSet<>();
     }
 
