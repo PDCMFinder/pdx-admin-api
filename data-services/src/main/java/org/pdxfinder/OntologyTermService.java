@@ -90,6 +90,9 @@ public class OntologyTermService {
             parseHierarchicalChildren(json, "diagnosis");
         }
 
+        log.info("Saving {} ontology terms to db", toBeSavedTerms.size());
+        ontologyTermRepository.saveAll(toBeSavedTerms);
+
     }
 
     private void parseHierarchicalChildren(String json, String type){
@@ -116,7 +119,6 @@ public class OntologyTermService {
             log.error(" {} ", e.getMessage());
         }
 
-        ontologyTermRepository.saveAll(toBeSavedTerms);
     }
 
     private OntologyTerm createOntologyTerm(JSONObject term, String type){
