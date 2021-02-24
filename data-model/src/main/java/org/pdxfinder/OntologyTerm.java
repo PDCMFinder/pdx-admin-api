@@ -1,5 +1,6 @@
 package org.pdxfinder;
 
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import java.util.HashSet;
@@ -30,6 +31,7 @@ public class OntologyTerm {
 
     @NonNull
     @EqualsAndHashCode.Include
+    @Column(unique=true)
     private String url;
 
     @NonNull
