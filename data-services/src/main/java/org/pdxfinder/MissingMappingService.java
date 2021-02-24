@@ -52,23 +52,19 @@ public class MissingMappingService {
     public void readDataFromTemplates(List<Path> folders) {
 
         PathMatcher metadataFile = FileSystems.getDefault().getPathMatcher("glob:**{metadata-sam,metadata-load}*.tsv");
+        PathMatcher drugDataFile = FileSystems.getDefault().getPathMatcher("glob:**{drug,treatment}*.tsv");
+
         for (Path p : folders) {
             Map<String, Table> metaDataTemplate = reader.readAllTsvFilesIn(p, metadataFile);
             metaDataTemplate = tableSetCleaner.cleanPdxTables(metaDataTemplate);
             log.info(p.toString());
             getDiagnosisAttributesFromTemplate(metaDataTemplate);
-        }
 
-        PathMatcher drugDataFile = FileSystems.getDefault().getPathMatcher("glob:**{drug,treatment}*.tsv");
-        for (Path p : folders) {
             Map<String, Table> drugDataTemplate = reader.readAllTreatmentFilesIn(p, drugDataFile);
             drugDataTemplate = tableSetCleaner.cleanPdxTables(drugDataTemplate);
-            log.info(p.toString());
-            getTreatmentAttributesFromTemplate(drugDataTemplate);
+            getTreatmentAttributesFromTemplate(drugDataTemplate, p.getFileName().toString());
+
         }
-
-
-
     }
 
     public List<Path> getProviderDirs() {
@@ -119,20 +115,25 @@ public class MissingMappingService {
 
 
 
-    public void getTreatmentAttributesFromTemplate(Map<String, Table> tables){
+    public void getTreatmentAttributesFromTemplate(Map<String, Table> tables, String abbrev){
+
+            Table drugTable = tables.get("drugdosing-Sheet1.tsv");
+            Table treatmentTable = tables.get("patienttreatment.tsv");
+            getTreatmentAttributesFromTemplate(drugTable, abbrev);
+            getTreatmentAttributesFromTemplate(treatmentTable, abbrev);
+    }
+
+    private void getTreatmentAttributesFromTemplate(Table table, String abbrev){
 
         try {
-            Table drugTable = tables.get("drugdosing-Sheet1.tsv");
-            if(drugTable == null) return;
+            if(table == null) return;
+            for (Row row : table) {
 
-            for (Row row : drugTable) {
-                String abbreviation = row.getString("abbreviation");
                 String treatmentName = row.getString("treatment_name");
-
-                MappingEntity mappingEntity = mappingService.getTreatmentMapping(abbreviation, treatmentName);
+                MappingEntity mappingEntity = mappingService.getTreatmentMapping(abbrev, treatmentName);
 
                 if (mappingEntity == null) {
-                    MappingEntity newUnmappedEntity = mappingService.saveUnmappedTreatment(abbreviation, treatmentName);
+                    MappingEntity newUnmappedEntity = mappingService.saveUnmappedTreatment(abbrev, treatmentName);
                     if (newUnmappedEntity != null)
                         missingMappingsContainer.addEntity(newUnmappedEntity);
                 }
@@ -142,6 +143,5 @@ public class MissingMappingService {
             log.error("Exception while getting treatment data from provider");
         }
     }
-
 
 }
