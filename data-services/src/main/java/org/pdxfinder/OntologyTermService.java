@@ -22,7 +22,7 @@ public class OntologyTermService {
     private static final String EMBEDDED = "_embedded";
     private static final String OLS_BASE_URL = "https://www.ebi.ac.uk/ols/api/ontologies/ncit/terms/";
 
-    Set<String> loadedTerms = new HashSet<>();
+    Set<String> visitedTerms = new HashSet<>();
     Set<OntologyTerm> discoveredTerms = new HashSet<>();
 
     @Autowired
@@ -31,21 +31,22 @@ public class OntologyTermService {
     @Autowired
     UtilityService utilityService;
 
-    public Set<String> getLoadedTerms() {
-        return loadedTerms;
+    public Set<String> getVisitedTerms() {
+        return visitedTerms;
     }
 
     @Transactional
     public void reloadDiagnosisTerms(){
-        loadedTerms = new HashSet<>();
+        visitedTerms = new HashSet<>();
         discoveredTerms = new HashSet<>();
         ontologyTermRepository.deleteAllByType("diagnosis");
         getDiagnosisTerms();
+        log.info("done");
     }
 
     @Transactional
     public void reloadTreatmentTerms(){
-        loadedTerms = new HashSet<>();
+        visitedTerms = new HashSet<>();
         discoveredTerms = new HashSet<>();
         ontologyTermRepository.deleteAllByType("treatment");
         ontologyTermRepository.deleteAllByType("regimen");
@@ -70,8 +71,9 @@ public class OntologyTermService {
 
             OntologyTerm notYetVisitedTerm = discoveredTerms.iterator().next();
             discoveredTerms.remove(notYetVisitedTerm);
-            if(loadedTerms.contains(notYetVisitedTerm.getUrl())) continue;
-            loadedTerms.add(notYetVisitedTerm.getUrl());
+            if(visitedTerms.contains(notYetVisitedTerm.getUrl())) continue;
+            visitedTerms.add(notYetVisitedTerm.getUrl());
+            if(visitedTerms.size()%500 == 0) log.info("Loaded {} terms", visitedTerms.size());
 
             String parentUrlEncoded = "";
             try {
@@ -104,13 +106,16 @@ public class OntologyTermService {
             for (int i = 0; i < hierarchicalChildren.length(); i++) {
 
                 JSONObject term = hierarchicalChildren.getJSONObject(i);
+                String url = term.getString("iri");
+                if(visitedTerms.contains(url)) continue;
+
                 String termLabel = term.getString("label");
                 String updatedTermLabel = updateTermLabel(termLabel);
 
                 termLabel = termLabel.replaceAll(",", "");
 
                 OntologyTerm newTerm = new OntologyTerm(
-                        term.getString("iri"),
+                        url,
                         updatedTermLabel != null ? updatedTermLabel : termLabel, type);
 
                 JSONArray synonyms = term.getJSONArray("synonyms");
@@ -119,16 +124,34 @@ public class OntologyTermService {
                 for(int j=0; j<synonyms.length();j++){
                     synonymsSet.add(synonyms.getString(j));
                 }
-
                 newTerm.setSynonyms(synonymsSet);
-                discoveredTerms.add(newTerm);
+
+                String description = "";
+                /*
+                if(term.has("description")){
+                    try {
+                        JSONArray descriptions = term.getJSONArray("description");
+
+                        for (int j = 0; j < descriptions.length(); j++) {
+                            description += descriptions.getString(j);
+                        }
+                    }
+                    catch(Exception e){
+                        description = term.getString("description");
+                    }
+                }
+*/
+                newTerm.setDescription(description);
                 ontologyTermRepository.save(newTerm);
-                log.info("Saving {}", newTerm.getLabel());
+                discoveredTerms.add(newTerm);
+
             }
 
         } catch (Exception e) {
             log.error(" {} ", e.getMessage());
+
         }
+
     }
 
     private String updateTermLabel(String termLabel){

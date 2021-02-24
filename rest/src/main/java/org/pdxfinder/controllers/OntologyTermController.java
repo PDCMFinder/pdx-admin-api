@@ -26,13 +26,13 @@ public class OntologyTermController {
     @GetMapping("reloaddiagnosisterms")
     public ResponseEntity<?> reloadDiagnosisTerms() {
         ontologyTermService.reloadDiagnosisTerms();
-        return new ResponseEntity<>(ontologyTermService.getLoadedTerms().size(), HttpStatus.OK);
+        return new ResponseEntity<>(ontologyTermService.getVisitedTerms().size(), HttpStatus.OK);
     }
 
     @GetMapping("reloadtreatmentterms")
     public ResponseEntity<?> reloadTreatmentTerms() {
         ontologyTermService.reloadTreatmentTerms();
-        return new ResponseEntity<>(ontologyTermService.getLoadedTerms().size(), HttpStatus.OK);
+        return new ResponseEntity<>(ontologyTermService.getVisitedTerms().size(), HttpStatus.OK);
     }
 
 
