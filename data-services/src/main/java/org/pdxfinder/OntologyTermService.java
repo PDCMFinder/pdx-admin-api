@@ -23,6 +23,7 @@ public class OntologyTermService {
     private static final String OLS_BASE_URL = "https://www.ebi.ac.uk/ols/api/ontologies/ncit/terms/";
 
     Set<String> visitedTerms = new HashSet<>();
+    Set<OntologyTerm> toBeSavedTerms = new HashSet<>();
     Set<OntologyTerm> discoveredTerms = new HashSet<>();
 
     @Autowired
@@ -39,6 +40,7 @@ public class OntologyTermService {
     public void reloadDiagnosisTerms(){
         visitedTerms = new HashSet<>();
         discoveredTerms = new HashSet<>();
+        toBeSavedTerms = new HashSet<>();
         ontologyTermRepository.deleteAllByType("diagnosis");
         getDiagnosisTerms();
         log.info("done");
@@ -62,10 +64,9 @@ public class OntologyTermService {
 
         //create the Cancer term
         OntologyTerm cancerTerm = new OntologyTerm("http://purl.obolibrary.org/obo/NCIT_C9305","Cancer","diagnosis");
-        ontologyTermRepository.save(cancerTerm);
 
         discoveredTerms.add(cancerTerm);
-
+        toBeSavedTerms.add(cancerTerm);
 
         while(!discoveredTerms.isEmpty()){
 
@@ -99,34 +100,47 @@ public class OntologyTermService {
             if (!job.has(EMBEDDED)) return;
 
             JSONObject job2 = job.getJSONObject("_embedded");
-
-            //JSONObject job2 = new JSONObject(embedded);
             JSONArray hierarchicalChildren = job2.getJSONArray("terms");
 
             for (int i = 0; i < hierarchicalChildren.length(); i++) {
 
                 JSONObject term = hierarchicalChildren.getJSONObject(i);
-                String url = term.getString("iri");
-                if(visitedTerms.contains(url)) continue;
-
-                String termLabel = term.getString("label");
-                String updatedTermLabel = updateTermLabel(termLabel);
-
-                termLabel = termLabel.replaceAll(",", "");
-
-                OntologyTerm newTerm = new OntologyTerm(
-                        url,
-                        updatedTermLabel != null ? updatedTermLabel : termLabel, type);
-
-                JSONArray synonyms = term.getJSONArray("synonyms");
-                Set<String> synonymsSet = new HashSet<>();
-
-                for(int j=0; j<synonyms.length();j++){
-                    synonymsSet.add(synonyms.getString(j));
+                OntologyTerm newTerm = createOntologyTerm(term, type);
+                if(newTerm != null){
+                    toBeSavedTerms.add(newTerm);
+                    discoveredTerms.add(newTerm);
                 }
-                newTerm.setSynonyms(synonymsSet);
+            }
 
-                String description = "";
+        } catch (Exception e) {
+            log.error(" {} ", e.getMessage());
+        }
+
+        ontologyTermRepository.saveAll(toBeSavedTerms);
+    }
+
+    private OntologyTerm createOntologyTerm(JSONObject term, String type){
+        String url = term.getString("iri");
+        if(visitedTerms.contains(url)) return null;
+
+        String termLabel = term.getString("label");
+        String updatedTermLabel = updateTermLabel(termLabel);
+
+        termLabel = termLabel.replaceAll(",", "");
+
+        OntologyTerm newTerm = new OntologyTerm(
+                url,
+                updatedTermLabel != null ? updatedTermLabel : termLabel, type);
+
+        JSONArray synonyms = term.getJSONArray("synonyms");
+        Set<String> synonymsSet = new HashSet<>();
+
+        for(int j=0; j<synonyms.length();j++){
+            synonymsSet.add(synonyms.getString(j));
+        }
+        newTerm.setSynonyms(synonymsSet);
+
+        String description = "";
                 /*
                 if(term.has("description")){
                     try {
@@ -141,17 +155,8 @@ public class OntologyTermService {
                     }
                 }
 */
-                newTerm.setDescription(description);
-                ontologyTermRepository.save(newTerm);
-                discoveredTerms.add(newTerm);
-
-            }
-
-        } catch (Exception e) {
-            log.error(" {} ", e.getMessage());
-
-        }
-
+        newTerm.setDescription(description);
+        return newTerm;
     }
 
     private String updateTermLabel(String termLabel){
