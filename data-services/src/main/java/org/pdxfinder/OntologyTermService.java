@@ -167,4 +167,9 @@ public class OntologyTermService {
         return updatedTermlabel;
     }
 
+
+    public List<OntologyTerm> getTermsByType(String type){
+        return ontologyTermRepository.findAllByType(type);
+    }
+
 }
