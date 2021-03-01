@@ -130,13 +130,18 @@ public class MissingMappingService {
             for (Row row : table) {
 
                 String treatmentName = row.getString("treatment_name");
-                MappingEntity mappingEntity = mappingService.getTreatmentMapping(abbrev, treatmentName);
+                String[] drugArray = treatmentName.split("\\+");
 
-                if (mappingEntity == null) {
-                    MappingEntity newUnmappedEntity = mappingService.saveUnmappedTreatment(abbrev, treatmentName);
-                    if (newUnmappedEntity != null)
-                        missingMappingsContainer.addEntity(newUnmappedEntity);
+                for(String drug:drugArray){
+                    MappingEntity mappingEntity = mappingService.getTreatmentMapping(abbrev, drug.trim());
+
+                    if (mappingEntity == null) {
+                        MappingEntity newUnmappedEntity = mappingService.saveUnmappedTreatment(abbrev, drug.trim());
+                        if (newUnmappedEntity != null)
+                            missingMappingsContainer.addEntity(newUnmappedEntity);
+                    }
                 }
+
             }
         }
         catch (Exception e){
