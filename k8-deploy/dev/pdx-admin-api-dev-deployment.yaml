@@ -1,0 +1,19 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: pdx-admin-api-dev
+spec:
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: pdx-admin-api-dev
+    spec:
+      containers:
+        - name: pdx-admin-api-dev
+          image: 'pdxfinder/pdx-admin-api:dev_0.0.1'
+          args:
+            - --data-base-location=tcp://10.251.211.143:1521
+          ports:
+            - containerPort: 8080
+
