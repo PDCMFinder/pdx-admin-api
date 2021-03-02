@@ -54,12 +54,12 @@
                 <version>2.7.1</version>
                 <configuration>
                     <to>
-                        <image>pdxfinder/pdx-admin-api
+                        <image>docker.io/pdxfinder/pdx-admin-api:dev_0.0.1
                         </image>
                     </to>
                     <container>
                         <ports>
-                            <port>8081</port>
+                            <port>8080</port>
                         </ports>
                     </container>
                 </configuration>
