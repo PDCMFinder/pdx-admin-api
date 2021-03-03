@@ -6,9 +6,14 @@ metadata:
     name: pdx-h2-dev-service
 spec:
   ports:
-    - protocol: TCP
+    - name: h2-http
+      protocol: TCP
       port: 81
       targetPort: 81
+    - name: h2-tcp
+      protocol: TCP
+      port: 1521
+      targetPort: 1521
   selector:
     app: pdx-h2-dev
   type: NodePort

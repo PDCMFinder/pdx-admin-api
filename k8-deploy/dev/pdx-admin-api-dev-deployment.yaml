@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: pdx-admin-api-dev
 spec:
-  replicas: 3
+  replicas: 1
   template:
     metadata:
       labels:
@@ -12,8 +12,9 @@ spec:
       containers:
         - name: pdx-admin-api-dev
           image: 'pdxfinder/pdx-admin-api:dev_0.0.1'
+          imagePullPolicy: Always
           args:
-            - --data-base-location=tcp://10.251.211.143:1521
+            - --data-base-location=tcp://hh-rke-wp-webadmin-20-worker-1.caas.ebi.ac.uk:31372
           ports:
             - containerPort: 8080
 
