@@ -263,7 +263,16 @@ public class OntologyTermService {
 
 
     public List<OntologyTerm> getTermsByType(String type){
-        return ontologyTermRepository.findAllByType(type);
+
+        List<OntologyTerm> result;
+        if(type.equalsIgnoreCase("treatment")){
+            result = ontologyTermRepository.findAllByType(type);
+            result.addAll(ontologyTermRepository.findAllByType("regimen"));
+        }
+        else{
+            result = ontologyTermRepository.findAllByType(type);
+        }
+        return result;
     }
 
 }
