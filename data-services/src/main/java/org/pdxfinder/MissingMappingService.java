@@ -43,6 +43,9 @@ public class MissingMappingService {
     public MappingContainer getMissingMappings() {
 
         missingMappingsContainer = new MappingContainer();
+        log.info("Deleting not mapped entities");
+        mappingService.deleteMappingEntities(mappingService.getNotMappedEntities());
+
         List<Path> subfolders = getProviderDirs();
         readDataFromTemplates(subfolders);
 

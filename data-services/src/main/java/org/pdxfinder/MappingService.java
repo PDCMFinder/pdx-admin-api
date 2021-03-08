@@ -125,6 +125,13 @@ public class MappingService {
     }
   }
 
+  public List<MappingEntity> getNotMappedEntities(){
+    return mappingEntityRepository.findByMappedTermLabel("-");
+  }
+
+  public void deleteMappingEntities(List<MappingEntity> entities){
+    mappingEntityRepository.deleteAll(entities);
+  }
 
   /**
    * Loads rules from a source: file or h2
