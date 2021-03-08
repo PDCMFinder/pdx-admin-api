@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pdx-h2-service
+  namespace: pdx-admin-interface
+  labels:
+    name: pdx-h2-service
+spec:
+  ports:
+    - name: h2-http
+      protocol: TCP
+      port: 81
+      targetPort: 81
+    - name: h2-tcp
+      protocol: TCP
+      port: 1521
+      targetPort: 1521
+  selector:
+    app: pdx-h2
+  type: NodePort
