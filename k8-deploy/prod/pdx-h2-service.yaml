@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: pdx-h2-service
+  namespace: pdx-admin-interface
   labels:
     name: pdx-h2-service
 spec:

@@ -2,6 +2,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: pdx-h2
+  namespace: pdx-admin-interface
 spec:
   replicas: 1
   template:
