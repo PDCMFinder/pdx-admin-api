@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: pdx-admin-api-dev-service
+  labels:
+    name: pdx-admin-api-dev-service
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8081
+  selector:
+    app: pdx-admin-api-dev
+  type: NodePort
