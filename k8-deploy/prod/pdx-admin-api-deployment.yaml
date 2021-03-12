@@ -15,7 +15,7 @@ spec:
           image: 'pdxfinder/pdx-admin-api:0.0.1'
           imagePullPolicy: Always
           args:
-            - --data-base-location=tcp://hh-rke-wp-webadmin-20-worker-1.caas.ebi.ac.uk:31372
+            - --data-base-location=tcp://hh-rke-wp-webadmin-20-worker-1.caas.ebi.ac.uk:30792
             - --data-dir=/opt/pdx-data
           ports:
             - containerPort: 8081

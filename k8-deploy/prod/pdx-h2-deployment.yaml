@@ -8,7 +8,7 @@ spec:
   template:
     metadata:
       labels:
-        app: pdx-h2-dev
+        app: pdx-h2
     spec:
       containers:
         - name: pdx-h2

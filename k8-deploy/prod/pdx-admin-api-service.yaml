@@ -10,6 +10,7 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 8081
+      nodePort: 31847
   selector:
     app: pdx-admin-api
   type: NodePort

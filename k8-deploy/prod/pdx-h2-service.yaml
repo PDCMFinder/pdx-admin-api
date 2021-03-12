@@ -11,10 +11,12 @@ spec:
       protocol: TCP
       port: 81
       targetPort: 81
+      nodePort: 32630
     - name: h2-tcp
       protocol: TCP
       port: 1521
       targetPort: 1521
+      nodePort: 30792
   selector:
     app: pdx-h2
   type: NodePort
