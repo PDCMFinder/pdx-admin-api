@@ -20,7 +20,7 @@ deploy-HH-WP-WEBADMIN-dev:
   script:
     - kubectl config set-cluster local --server="${HH_WP_WEBADMIN_ENDPOINT}"
     - kubectl config set clusters.local.certificate-authority-data "${HH_WP_WEBADMIN_CERTIFICATE_AUTHORITY}"
-    - kubectl config set-credentials ${HH_WP_WEBADMIN_DEV_USER} --token="${HH_WP_WEBADMIN_ENDPOIN_DEV_USER_TOKEN}"
+    - kubectl config set-credentials ${HH_WP_WEBADMIN_DEV_USER} --token="${HH_WP_WEBADMIN_DEV_USER_TOKEN}"
     - kubectl config set-context "${HH_WP_WEBADMIN_DEV_NAMESPACE}" --cluster=local --user=${HH_WP_WEBADMIN_DEV_USER} --namespace="${HH_WP_WEBADMIN_DEV_NAMESPACE}"
     - kubectl config use-context "${HH_WP_WEBADMIN_DEV_NAMESPACE}"
     - kubectl version
