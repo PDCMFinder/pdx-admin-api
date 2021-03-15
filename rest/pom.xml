@@ -57,8 +57,7 @@
                         <image>adoptopenjdk:11-jre-hotspot</image>
                     </from>
                     <to>
-                        <image>docker.io/pdxfinder/pdx-admin-api:dev_0.0.1
-                        </image>
+                        <image>pdxfinder/pdx-admin-api</image>
                     </to>
                     <container>
                         <ports>
