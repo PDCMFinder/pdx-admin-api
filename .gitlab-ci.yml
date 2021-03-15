@@ -25,7 +25,7 @@ deploy-HH-WP-WEBADMIN-dev:
     - kubectl config use-context "${HH_WP_WEBADMIN_DEV_NAMESPACE}"
     - kubectl version
 
-    - sed -i "s/dev/$CI_COMMIT_SHA/g' /k8-deploy/dev/pdx-admin-api-dev-deployment.yaml
+    - sed -i "s/dev/$CI_COMMIT_SHA/g" k8-deploy/dev/pdx-admin-api-dev-deployment.yaml
 
     - kubectl apply -f k8-deploy/dev/pdx-admin-api-dev-deployment.yaml --record
     - kubectl rollout status -f k8-deploy/dev/pdx-admin-api-dev-deployment.yaml
@@ -47,7 +47,7 @@ deploy-HH-WP-WEBADMIN-master:
     - kubectl config use-context "${HH_WP_WEBADMIN_NAMESPACE}"
     - kubectl version
 
-    - sed -i "s/latest/$CI_COMMIT_SHA/g' /k8-deploy/prod/pdx-admin-api-deployment.yaml
+    - sed -i "s/latest/$CI_COMMIT_SHA/g" k8-deploy/prod/pdx-admin-api-deployment.yaml
 
     - kubectl apply -f k8-deploy/prod/pdx-admin-api-deployment.yaml --record
     - kubectl rollout status -f k8-deploy/prod/pdx-admin-api-deployment.yaml
