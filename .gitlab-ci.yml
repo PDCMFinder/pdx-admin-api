@@ -31,7 +31,7 @@ deploy-HH-WP-WEBADMIN-dev:
     - kubectl rollout status -f k8-deploy/dev/pdx-admin-api-dev-deployment.yaml
 
     - kubectl apply -f k8-deploy/dev/pdx-admin-api-dev-service.yaml --record
-    - kubectl get pods,service,deploy,replicaset,ing
+    - kubectl get pods,service,deploy,replicaset,ing -n "${HH_WP_WEBADMIN_DEV_NAMESPACE}"
   only:
     refs:
       - dev
@@ -53,7 +53,7 @@ deploy-HH-WP-WEBADMIN-master:
     - kubectl rollout status -f k8-deploy/prod/pdx-admin-api-deployment.yaml
 
     - kubectl apply -f k8-deploy/prod/pdx-admin-api-service.yaml --record
-    - kubectl get pods,service,deploy,replicaset,ing
+    - kubectl get pods,service,deploy,replicaset,ing -n "${HH_WP_WEBADMIN_NAMESPACE}"
   only:
     refs:
       - master
