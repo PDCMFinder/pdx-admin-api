@@ -43,6 +43,9 @@ public class MissingMappingService {
     public MappingContainer getMissingMappings() {
 
         missingMappingsContainer = new MappingContainer();
+        log.info("Deleting not mapped entities");
+        mappingService.deleteMappingEntities(mappingService.getNotMappedEntities());
+
         List<Path> subfolders = getProviderDirs();
         readDataFromTemplates(subfolders);
 
@@ -52,10 +55,18 @@ public class MissingMappingService {
     public void readDataFromTemplates(List<Path> folders) {
 
         PathMatcher metadataFile = FileSystems.getDefault().getPathMatcher("glob:**{metadata-sam,metadata-load}*.tsv");
+        PathMatcher drugDataFile = FileSystems.getDefault().getPathMatcher("glob:**{drug,treatment}*.tsv");
+
         for (Path p : folders) {
             Map<String, Table> metaDataTemplate = reader.readAllTsvFilesIn(p, metadataFile);
             metaDataTemplate = tableSetCleaner.cleanPdxTables(metaDataTemplate);
+            log.info(p.toString());
             getDiagnosisAttributesFromTemplate(metaDataTemplate);
+
+            Map<String, Table> drugDataTemplate = reader.readAllTreatmentFilesIn(p, drugDataFile);
+            drugDataTemplate = tableSetCleaner.cleanPdxTables(drugDataTemplate);
+            getTreatmentAttributesFromTemplate(drugDataTemplate, p.getFileName().toString());
+
         }
     }
 
@@ -78,26 +89,67 @@ public class MissingMappingService {
     }
 
     public void getDiagnosisAttributesFromTemplate(Map<String, Table> tables) {
+        try {
+            Table loaderTable = tables.get("metadata-loader.tsv");
+            Row loaderRow = loaderTable.row(0);
+            String dataSource = loaderRow.getString("abbreviation");
 
-        Table loaderTable = tables.get("metadata-loader.tsv");
-        Row loaderRow = loaderTable.row(0);
-        String dataSource = loaderRow.getString("abbreviation");
+            Table sampleTable = tables.get("metadata-sample.tsv");
 
-        Table sampleTable = tables.get("metadata-sample.tsv");
+            for (Row row : sampleTable) {
 
-        for (Row row : sampleTable) {
+                String primarySiteName = row.getString("primary_site");
+                String diagnosis = row.getString("diagnosis");
+                String tumorTypeName = row.getString("tumour_type");
 
-            String primarySiteName = row.getString("primary_site");
-            String diagnosis = row.getString("diagnosis");
-            String tumorTypeName = row.getString("tumour_type");
+                MappingEntity mappingEntity = mappingService.getDiagnosisMapping(dataSource, diagnosis, primarySiteName, tumorTypeName);
 
-            MappingEntity mappingEntity = mappingService.getDiagnosisMapping(dataSource,diagnosis,primarySiteName, tumorTypeName);
-
-            if(mappingEntity == null){
-                MappingEntity newUnmappedEntity = mappingService.saveUnmappedDiagnosis(dataSource, diagnosis, primarySiteName, tumorTypeName);
-                if(newUnmappedEntity != null)
-                    missingMappingsContainer.addEntity(newUnmappedEntity);
+                if (mappingEntity == null) {
+                    MappingEntity newUnmappedEntity = mappingService.saveUnmappedDiagnosis(dataSource, diagnosis, primarySiteName, tumorTypeName);
+                    if (newUnmappedEntity != null)
+                        missingMappingsContainer.addEntity(newUnmappedEntity);
+                }
             }
         }
+        catch (Exception e){
+            log.error("Exception while getting diagnosis data from provider.");
+        }
     }
+
+
+
+    public void getTreatmentAttributesFromTemplate(Map<String, Table> tables, String abbrev){
+
+            Table drugTable = tables.get("drugdosing-Sheet1.tsv");
+            Table treatmentTable = tables.get("patienttreatment.tsv");
+            getTreatmentAttributesFromTemplate(drugTable, abbrev);
+            getTreatmentAttributesFromTemplate(treatmentTable, abbrev);
+    }
+
+    private void getTreatmentAttributesFromTemplate(Table table, String abbrev){
+
+        try {
+            if(table == null) return;
+            for (Row row : table) {
+
+                String treatmentName = row.getString("treatment_name");
+                String[] drugArray = treatmentName.split("\\+");
+
+                for(String drug:drugArray){
+                    MappingEntity mappingEntity = mappingService.getTreatmentMapping(abbrev, drug.trim());
+
+                    if (mappingEntity == null) {
+                        MappingEntity newUnmappedEntity = mappingService.saveUnmappedTreatment(abbrev, drug.trim());
+                        if (newUnmappedEntity != null)
+                            missingMappingsContainer.addEntity(newUnmappedEntity);
+                    }
+                }
+
+            }
+        }
+        catch (Exception e){
+            log.error("Exception while getting treatment data from provider");
+        }
+    }
+
 }

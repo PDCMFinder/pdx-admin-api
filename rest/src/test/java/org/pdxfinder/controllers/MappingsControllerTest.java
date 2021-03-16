@@ -10,12 +10,7 @@ import java.util.TreeMap;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.pdxfinder.CSVHandler;
-import org.pdxfinder.MappingContainer;
-import org.pdxfinder.MappingEntity;
-import org.pdxfinder.MappingService;
-import org.pdxfinder.MissingMappingService;
-import org.pdxfinder.UtilityService;
+import org.pdxfinder.*;
 import org.pdxfinder.dto.PaginationDTO;
 import org.pdxfinder.util.JsonHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,6 +75,9 @@ class MappingsControllerTest {
 
   @MockBean
   private RestTemplateBuilder restTemplateBuilder;
+
+  @MockBean
+  private OntologyTermService ontologyTermService;
 
   @MockBean
   private CSVHandler csvHandler;

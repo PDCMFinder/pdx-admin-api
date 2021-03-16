@@ -26,6 +26,7 @@ public class MappingsController {
   private final UtilityService utilityService;
   private final MappingService mappingService;
   private final MissingMappingService missingMappingService;
+  private final OntologyTermService ontologyTermService;
   private final CSVHandler csvHandler;
 
   private static final String MAPPING_VALUE_SEPARATOR = ":";
@@ -35,11 +36,13 @@ public class MappingsController {
       MappingService mappingService,
       MissingMappingService missingMappingService,
       UtilityService utilityService,
+      OntologyTermService ontologyTermService,
       CSVHandler csvHandler) {
     this.utilityService = utilityService;
     this.csvHandler = csvHandler;
     this.mappingService = mappingService;
     this.missingMappingService = missingMappingService;
+    this.ontologyTermService = ontologyTermService;
   }
 
   /**
@@ -111,6 +114,14 @@ public class MappingsController {
     MappingContainer missingMappings = missingMappingService.getMissingMappings();
     return new ResponseEntity<>(missingMappings.getEntityList(), HttpStatus.OK);
   }
+
+  @GetMapping("/ontologies")
+  public Object getOntologies(@RequestParam(value = "type", defaultValue = "diagnosis") Optional<String> dataType){
+
+    String entityType = dataType.get();
+    return ontologyTermService.getTermsByType(entityType);
+  }
+
 
   @PutMapping
   public ResponseEntity<?> editListOfEntityMappings(

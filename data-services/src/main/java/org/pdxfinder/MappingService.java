@@ -125,6 +125,13 @@ public class MappingService {
     }
   }
 
+  public List<MappingEntity> getNotMappedEntities(){
+    return mappingEntityRepository.findByMappedTermLabel("-");
+  }
+
+  public void deleteMappingEntities(List<MappingEntity> entities){
+    mappingEntityRepository.deleteAll(entities);
+  }
 
   /**
    * Loads rules from a source: file or h2
@@ -593,7 +600,7 @@ public class MappingService {
     return dla.execute(key1, key2);
   }
 
-  public void saveUnmappedTreatment(String dataSource, String treatment) {
+  public MappingEntity saveUnmappedTreatment(String dataSource, String treatment) {
 
     List<String> mappingLabels = Arrays.asList("DataSource", "TreatmentName");
 
@@ -604,7 +611,7 @@ public class MappingService {
     MappingEntity mappingEntity = new MappingEntity(MappingEntityType.treatment.get(),
         mappingLabels, mappingValues);
 
-    saveUnmappedTerms(mappingEntity);
+    return saveUnmappedTerms(mappingEntity);
   }
 
 
