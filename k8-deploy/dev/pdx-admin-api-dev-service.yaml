@@ -9,6 +9,7 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 8081
+      nodePort: 32368
   selector:
     app: pdx-admin-api-dev
   type: NodePort
