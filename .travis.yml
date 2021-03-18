@@ -2,11 +2,16 @@ language: java
 sudo: false
 cache:
   directories:
-    - $HOME/.m2
-
+  - "$HOME/.m2"
 dist: xenial
-
 jdk: openjdk11
 
+addons:
+  sonarcloud:
+    organization: "pdxfinder"
+    token:
+      secure: "YBF4y/gfYc7hpZSFMTVkbuhcA2SETNym1gRXO+LWxeypTOmCAhnm2oeZGSg+SCJSPQLT/J3kp2WmNi+qYPkmuZuNZnoHCbznDyEcmzCOn+xFExSzZ6EvMoyQizlRETingjSpeySERcNY/Dur+1d4ElV1G4pNkBWJxmoqjhBTzR6koXbt/RjFH1lBnkwrBCIjokibzpDpW2jzqNfJj5ys1vq1RgDUuplcicJ+0NRjH66KbxniJvLtSkSt+iPA2pVCKRFs4vOmMV98KGMeA4yXkP7pbQVYSW0H0zFrNaPpWpw9bTVYJTW3NOAbe3QUd3plaGj9TZI0z0oBfVQWFZeGxHATIPP8x8Aj7vSVwJJnf5+RReLOGHMqRClanDmyHhLwE8imyD27Z7pOA7jfh6HRKXUGw7juW1BtrNWV2WH+J5EolqVnxl421cEIAf226cuFtIhXwOf0+R2W4pAne3O5mf1f8IkDKVNzDSWk6k43CFnhZ8Ek/EW8XHQl3jmm7U5KUwL7pdfoNLF0jGJmy4e3nQeQ8yyTL1OxfaR5YWgQHUsBMgO5w9EmweOh8KCq9cSO7NC7CkZ6eKYpJS5M//W9/NNR4gxLa1qIJvcmYlh0Ca6vErgX+FjRFtB1WM638IhMQmyHL64xKtUBwc+vl1Od8xvlMvvGM7G6KHHwC97wm7s=" # encrypted value of your token
+
 script:
-  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install
+  # the following command line builds the project, runs the tests with coverage and then execute the SonarCloud analysis
+  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent install sonar:sonar
