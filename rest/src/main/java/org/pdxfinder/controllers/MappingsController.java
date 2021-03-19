@@ -4,7 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.poi.util.IOUtils;
 import org.pdxfinder.*;
 import org.pdxfinder.dto.*;
 import org.slf4j.Logger;
@@ -256,6 +263,40 @@ public class MappingsController {
       }
     }
     return Pair.of(mappingLabel, mappingValue);
+  }
+
+  @RequestMapping(value="/mappingRules", produces="application/zip")
+  public void getZipOfMappingRules(HttpServletResponse response) throws IOException {
+
+    //setting headers
+    response.setStatus(HttpServletResponse.SC_OK);
+    String fileName = "mappingRules_" + new SimpleDateFormat("yyyyMMddHHmm'.zip'").format(new Date());
+    response.addHeader("Content-Disposition", "attachment; filename=\""+fileName+"\"");
+
+    ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
+
+    Map<String, String> mappingRulesPaths = mappingService.getMappingRulesPaths();
+    // create a list to add files to be zipped
+    ArrayList<File> files = new ArrayList<>(mappingRulesPaths.size());
+    for (Map.Entry<String, String> entry : mappingRulesPaths.entrySet()) {
+      System.out.println(entry.getKey() + ":" + entry.getValue());
+      File mappingsFile = new File(entry.getValue());
+      files.add(mappingsFile);
+    }
+
+    // package files
+    for (File file : files) {
+      //new zip entry and copying inputstream with file to zipOutputStream, after all closing streams
+      zipOutputStream.putNextEntry(new ZipEntry(file.getName()));
+      FileInputStream fileInputStream = new FileInputStream(file);
+
+      IOUtils.copy(fileInputStream, zipOutputStream);
+
+      fileInputStream.close();
+      zipOutputStream.closeEntry();
+    }
+
+    zipOutputStream.close();
   }
 
 }

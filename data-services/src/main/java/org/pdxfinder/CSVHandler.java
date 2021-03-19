@@ -181,7 +181,7 @@ public class CSVHandler {
 
         String mappingKey = "";
 
-        if (entityType.equals(MappingEntityType.diagnosis.get())) {
+        if (entityType.equals(MappingEntityType.DIAGNOSIS.getLabel())) {
 
             mappingKey = String.join("__",
                                      entityType,
@@ -193,7 +193,7 @@ public class CSVHandler {
             ).toLowerCase().replaceAll("[^a-zA-Z0-9 _-]", "");
 
         }
-        else if (entityType.equals(MappingEntityType.treatment.get())) {
+        else if (entityType.equals(MappingEntityType.TREATMENT.getLabel())) {
 
             mappingKey = String.join("__",
                                      entityType,
