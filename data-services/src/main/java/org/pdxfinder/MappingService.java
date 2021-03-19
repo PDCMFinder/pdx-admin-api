@@ -2,8 +2,6 @@ package org.pdxfinder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import java.nio.file.FileSystems;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,14 +20,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
-
 
 @Service
 public class MappingService {
@@ -49,7 +42,6 @@ public class MappingService {
   private final UtilityService utilityService;
 
   private final PaginationService paginationService;
-
 
   @Autowired
   public MappingService(
@@ -97,32 +89,6 @@ public class MappingService {
     }
     String mapKey = getTreatmentMappingKey(dataSource, treatmentName);
     return container.getEntityById(mapKey);
-  }
-
-  public MappingContainer getInitializedContainer() {
-    if (!INITIALIZED) {
-      loadRules("json");
-    }
-    return container;
-  }
-
-  public void saveMappingsToFile(String fileName, List<MappingEntity> maprules) {
-
-    Map<String, List<MappingEntity>> mappings = new HashMap<>();
-    mappings.put("mappings", maprules);
-
-    Gson gson = new Gson();
-    String json = gson.toJson(mappings);
-
-    try {
-      BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, false));
-
-      writer.append(json);
-      writer.close();
-
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
   }
 
   public List<MappingEntity> getNotMappedEntities(){
@@ -300,7 +266,6 @@ public class MappingService {
 
   }
 
-
   private void loadTreatmentMappings(String file) {
 
     String json = utilityService.parseFile(file);
@@ -361,97 +326,6 @@ public class MappingService {
 
   }
 
-
-  public Map<String, List<MappingEntity>> getMissingDiagnosisMappings(String ds) {
-
-    MappingContainer mc = new MappingContainer();
-
-    if (ds == null || ds.isEmpty()) {
-
-    } else {
-
-    }
-
-    Map<String, List<MappingEntity>> entityMap = new HashMap<>();
-
-    List<MappingEntity> mappingEntities = mappingEntityRepository
-        .findByMappedTermLabel(null);  // new ArrayList<>();
-
-    entityMap.put("mappings", mappingEntities);
-    return entityMap;
-
-  }
-
-/*
-    public MappingContainer getSavedDiagnosisMappings(String ds){
-
-
-        if(!INITIALIZED){
-
-            loadRules("file");
-        }
-
-        //no filter, return everything
-        if(ds == null) return existingDiagnosisMappings;
-
-        MappingContainer mc = new MappingContainer();
-
-        List<MappingEntity> results = existingDiagnosisMappings.getMappings().values().stream().filter(
-                x -> x.getEntityType().equals("DIAGNOSIS") &&
-                        x.getMappingValues().get("DataSource").equals(ds)).collect(Collectors.toList());
-
-        results.forEach(x -> {
-            mc.addEntity(x);
-        });
-
-
-    return mc;
-    }
-
-*/
-
-
-  public MappingContainer getMappingsByDSAndType(List<String> ds, String type) {
-
-    if (!INITIALIZED) {
-
-      loadRules("json");
-    }
-
-    MappingContainer mc = new MappingContainer();
-
-    for (MappingEntity me : container.getMappings().values()) {
-
-      if (me.getEntityType().toLowerCase().equals(type.toLowerCase())) {
-
-        for (String dataSource : ds) {
-
-          if (dataSource.toLowerCase()
-              .equals(me.getMappingValues().get("DataSource").toLowerCase())) {
-            //clone object but purge keys
-            MappingEntity me2 = new MappingEntity();
-            me2.setEntityId(me.getEntityId());
-            me2.setEntityType(me.getEntityType());
-            me2.setMappingLabels(me.getMappingLabels());
-            me2.setMappingValues(me.getMappingValues());
-            me2.setMappedTermUrl(me.getMappedTermUrl());
-            me2.setMappedTermLabel(me.getMappedTermLabel());
-            me2.setMapType(me.getMapType());
-            me2.setJustification(me.getJustification());
-            me2.setStatus(me.getStatus());
-            me2.setSuggestedMappings(me.getSuggestedMappings());
-            me2.setMappingKey(me.getMappingKey());
-            mc.addEntity(me2);
-          }
-        }
-      }
-    }
-
-    return mc;
-
-  }
-
-
   private List<MappingEntity> getSuggestionsForUnmappedEntity(MappingEntity me,
       MappingContainer mc) {
 
@@ -491,16 +365,12 @@ public class MappingService {
     TreeMap<Integer, List<MappingEntity>> orderedSuggestions = new TreeMap<>(unorderedSuggestions);
     List<MappingEntity> resultList = new ArrayList<>();
 
-    //log.info("UNMAPPED: "+me.getMappingValues().get("SampleDiagnosis")+" "+me.getMappingValues().get("OriginTissue"));
-
     int entityCounter = 0;
     for (Map.Entry<Integer, List<MappingEntity>> entry : orderedSuggestions.entrySet()) {
 
       Integer ix = entry.getKey();
       List<MappingEntity> list = entry.getValue();
       for (MappingEntity ment : list) {
-
-        //log.info("SUGG: " + ment.getMappingValues().get("SampleDiagnosis") + " " + ment.getMappingValues().get("OriginTissue") + "INDEX:" + ix);
         resultList.add(ment);
         entityCounter++;
 
@@ -515,7 +385,6 @@ public class MappingService {
     }
     return resultList;
   }
-
 
   private int getSimilarityIndexComponent(DamerauLevenshteinAlgorithm dla, String entityType,
       String entityAttribute, String attribute1, String attribute2) {
@@ -558,29 +427,6 @@ public class MappingService {
 
   }
 
-
-  String getTypeKeyValues(MappingEntity me) {
-
-    String key = "";
-
-    if (me == null) {
-      return key;
-    }
-
-    switch (me.getEntityType()) {
-
-      case "DIAGNOSIS":
-        for (String label : getDiagnosisMappingLabels()) {
-          key += me.getMappingValues().get(label).toLowerCase();
-        }
-        break;
-      default:
-        key = "";
-    }
-    return key;
-  }
-
-
   public List<String> getDiagnosisMappingLabels() {
 
     List<String> mapLabels = new ArrayList<>();
@@ -601,12 +447,6 @@ public class MappingService {
     return mapLabels;
   }
 
-
-  private int getStringSimilarity(DamerauLevenshteinAlgorithm dla, String key1, String key2) {
-
-    return dla.execute(key1, key2);
-  }
-
   public MappingEntity saveUnmappedTreatment(String dataSource, String treatment) {
 
     List<String> mappingLabels = Arrays.asList("DataSource", "TreatmentName");
@@ -620,7 +460,6 @@ public class MappingService {
 
     return saveUnmappedTerms(mappingEntity);
   }
-
 
   public MappingEntity saveUnmappedDiagnosis(String dataSource, String diagnosis,
       String originTissue, String tumorType) {
@@ -643,7 +482,6 @@ public class MappingService {
     return saveUnmappedTerms(mappingEntity);
   }
 
-
   public MappingEntity saveUnmappedTerms(MappingEntity mappingEntity) {
 
     mappingEntity.setStatus(Status.unmapped.get());
@@ -664,54 +502,10 @@ public class MappingService {
     return null;
   }
 
-
-  public void saveMappedTerms(List<MappingEntity> mappingEntities) {
-
-    for (MappingEntity mappingEntity : mappingEntities) {
-
-      mappingEntity.setEntityId(null);
-      mappingEntity.setStatus(Status.validated.get());
-      mappingEntity.setEntityType(mappingEntity.getEntityType().toLowerCase());
-
-      String mappingKey = mappingEntity.getMappingKey();
-
-      MappingEntity entity = mappingEntityRepository.findByMappingKey(mappingKey);
-
-      if (entity == null) {
-
-        mappingEntityRepository.save(mappingEntity);
-
-        log.warn("{} was SAVED ", mappingKey);
-
-      } else {
-        log.warn("{} was not NOT SAVED: found in the Database ", mappingKey);
-      }
-    }
-  }
-
   public void purgeMappingDatabase() {
     log.warn("Deleting H2 database and all its {} mapping data",
         mappingEntityRepository.findAll().size());
     mappingEntityRepository.deleteAll();
-  }
-
-  public List<MappingEntity> loadMappingsFromFile(String jsonFile) {
-
-    String jsonKey = "mappings";
-    List<MappingEntity> mappingEntities = new ArrayList<>();
-
-    List<Map<String, Object>> mappings = utilityService.serializeJSONToMaps(jsonFile, jsonKey);
-
-    mappings.forEach(mapping -> {
-
-      MappingEntity mappingEntity = mapper.convertValue(mapping, MappingEntity.class);
-      mappingEntity.setMappingKey(mappingEntity.generateMappingKey());
-      mappingEntity.setDateCreated(new Date());
-      mappingEntities.add(mappingEntity);
-
-    });
-
-    return mappingEntities;
   }
 
   public void writeMappingsToFile(String entityType) {
