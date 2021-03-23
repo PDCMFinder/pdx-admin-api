@@ -43,6 +43,8 @@ public class MappingService {
 
   private final PaginationService paginationService;
 
+  static final String MAPPING_RULE_NOT_FOUND = "%s mappings rules file not found at %s.";
+
   @Autowired
   public MappingService(
       MappingEntityRepository mappingEntityRepository,
@@ -53,6 +55,10 @@ public class MappingService {
     this.utilityService = utilityService;
     this.paginationService = paginationService;
     container = new MappingContainer();
+  }
+
+  public MappingContainer getMappingContainer() {
+    return container;
   }
 
   public String getDiagnosisMappingKey(
@@ -136,32 +142,35 @@ public class MappingService {
 
   public Map<String, String> getMappingRulesPaths() {
     Map<String, String> mappingRulesPaths = new HashMap<>();
-    String mappingRulesDir = rootDir + "/mapping";
-    File folder = new File(mappingRulesDir);
+    String mappingRulesDir = getMappingDirectory();
+    String diagnosisMappingsFilePath = mappingRulesDir + "/" + getDiagnosisJsonFileName();
+    String treatmentMappingsFilePath = mappingRulesDir + "/" + getTreatmentJsonFileName();
+    checkRulesExist(MappingEntityType.DIAGNOSIS, diagnosisMappingsFilePath);
+    checkRulesExist(MappingEntityType.TREATMENT, treatmentMappingsFilePath);
+    mappingRulesPaths.put(MappingEntityType.DIAGNOSIS.getLabel(), diagnosisMappingsFilePath);
+    mappingRulesPaths.put(MappingEntityType.TREATMENT.getLabel(), treatmentMappingsFilePath);
 
-    if (folder.exists()) {
-      String diagnosisMappingsFilePath = mappingRulesDir + "/diagnosis_mappings.json";
-      String treatmentMappingsFilePath = mappingRulesDir + "/treatment_mappings.json";
-
-      File diagnosisFile = new File(diagnosisMappingsFilePath);
-      File treatmentFile = new File(treatmentMappingsFilePath);
-
-      if (diagnosisFile.exists()) {
-        mappingRulesPaths.put(MappingEntityType.DIAGNOSIS.getLabel(), diagnosisMappingsFilePath);
-      } else {
-        log.error("Diagnosis mappings file not found at " + diagnosisMappingsFilePath);
-      }
-
-      if (treatmentFile.exists()) {
-        mappingRulesPaths.put(MappingEntityType.TREATMENT.getLabel(), treatmentMappingsFilePath);
-      } else {
-        log.error("Treatment mappings file not found at " + treatmentMappingsFilePath);
-      }
-
-    } else {
-      log.error("Mapping rules directory not found at " + mappingRulesDir);
-    }
     return mappingRulesPaths;
+  }
+
+  String getMappingDirectory() {
+    return rootDir + "/mapping";
+  }
+
+  String getDiagnosisJsonFileName() {
+    return "diagnosis_mappings.json";
+  }
+
+  String getTreatmentJsonFileName() {
+    return "treatment_mappings.json";
+  }
+
+  private void checkRulesExist(MappingEntityType mappingEntityType, String fileName) {
+    File rulesFile = new File(fileName);
+    if (!rulesFile.exists()) {
+      throw new IllegalArgumentException(
+          String.format(MAPPING_RULE_NOT_FOUND, mappingEntityType.getLabel(), fileName));
+    }
   }
 
 
@@ -190,10 +199,11 @@ public class MappingService {
           String originTissue = mappingVal.getString("OriginTissue");
           String tumorType = mappingVal.getString("TumorType");
           String ontologyTerm = row.getString("mappedTermLabel");
-          String mapType = row.getString("mapType");
-          String justification = row.getString("justification");
-          String mappedTermUrl = row.getString("mappedTermUrl");
+          String mapType = row.optString("mapType").toLowerCase();
+          String justification = row.optString("justification").toLowerCase();
+          String mappedTermUrl = row.optString("mappedTermUrl");
           Long entityId = row.getLong("entityId");
+          String status = row.optString("status").toLowerCase();
 
           //if(ds!= null && !ds.toLowerCase().equals(dataSource.toLowerCase())) continue;
 
@@ -253,6 +263,10 @@ public class MappingService {
           me.setEntityId(entityId);
           me.setMappedTermUrl(mappedTermUrl);
           me.setMappingKey(me.generateMappingKey());
+          if (!status.isBlank())
+          {
+            me.setStatus(status);
+          }
 
           container.addEntity(me);
 
@@ -283,10 +297,11 @@ public class MappingService {
           String dataSource = mappingVal.getString("DataSource");
           String treatmentName = mappingVal.getString("TreatmentName").toLowerCase();
           String ontologyTerm = row.getString("mappedTermLabel");
-          String mapType = row.getString("mapType");
-          String justification = row.getString("justification");
+          String mapType = row.optString("mapType").toLowerCase();
+          String justification = row.optString("justification").toLowerCase();
           String mappedTermUrl = row.getString("mappedTermUrl");
           Long entityId = row.getLong("entityId");
+          String status = row.optString("status").toLowerCase();
 
           if (ontologyTerm.equals("") || ontologyTerm == null) {
             continue;
@@ -314,6 +329,10 @@ public class MappingService {
           me.setEntityId(entityId);
           me.setMappedTermUrl(mappedTermUrl);
           me.setMappingKey(me.generateMappingKey());
+          if (!status.isBlank())
+          {
+            me.setStatus(status);
+          }
 
           container.addEntity(me);
 
@@ -736,7 +755,21 @@ public class MappingService {
     });
 
     return savedEntities;
+  }
 
+  public void rebuildDatabaseFromRulesFiles() {
+    Map<String, String> mappingRulesPaths = getMappingRulesPaths();
+    log.info("Database will be rebuild with: " + mappingRulesPaths);
+    loadDiagnosisMappings(mappingRulesPaths.get(MappingEntityType.DIAGNOSIS.getLabel()));
+    loadTreatmentMappings(mappingRulesPaths.get(MappingEntityType.TREATMENT.getLabel()));
+    purgeMappingDatabase();
+    saveEntitiesInContainerToDatabase();
+  }
+
+  private void saveEntitiesInContainerToDatabase() {
+    List<MappingEntity> mappingEntities = container.getEntityList();
+    mappingEntityRepository.saveAll(mappingEntities);
+    log.info("Database rebuild. Mapping data count: " + mappingEntityRepository.count());
   }
 
 
