@@ -2,6 +2,10 @@ package org.pdxfinder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -95,6 +99,25 @@ public class MappingService {
     }
     String mapKey = getTreatmentMappingKey(dataSource, treatmentName);
     return container.getEntityById(mapKey);
+  }
+
+  public void saveMappingsToFile(String fileName, List<MappingEntity> maprules) {
+
+    Map<String, List<MappingEntity>> mappings = new HashMap<>();
+    mappings.put("mappings", maprules);
+
+    Gson gson = new Gson();
+    String json = gson.toJson(mappings);
+
+    try {
+      BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, false));
+
+      writer.append(json);
+      writer.close();
+
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 
   public List<MappingEntity> getNotMappedEntities(){
@@ -342,6 +365,46 @@ public class MappingService {
     } catch (JSONException e) {
       e.printStackTrace();
     }
+
+  }
+
+  public MappingContainer getMappingsByDSAndType(List<String> ds, String type) {
+
+    if (!INITIALIZED) {
+
+      loadRules("json");
+    }
+
+    MappingContainer mc = new MappingContainer();
+
+    for (MappingEntity me : container.getMappings().values()) {
+
+      if (me.getEntityType().toLowerCase().equals(type.toLowerCase())) {
+
+        for (String dataSource : ds) {
+
+          if (dataSource.toLowerCase()
+              .equals(me.getMappingValues().get("DataSource").toLowerCase())) {
+            //clone object but purge keys
+            MappingEntity me2 = new MappingEntity();
+            me2.setEntityId(me.getEntityId());
+            me2.setEntityType(me.getEntityType());
+            me2.setMappingLabels(me.getMappingLabels());
+            me2.setMappingValues(me.getMappingValues());
+            me2.setMappedTermUrl(me.getMappedTermUrl());
+            me2.setMappedTermLabel(me.getMappedTermLabel());
+            me2.setMapType(me.getMapType());
+            me2.setJustification(me.getJustification());
+            me2.setStatus(me.getStatus());
+            me2.setSuggestedMappings(me.getSuggestedMappings());
+            me2.setMappingKey(me.getMappingKey());
+            mc.addEntity(me2);
+          }
+        }
+      }
+    }
+
+    return mc;
 
   }
 
