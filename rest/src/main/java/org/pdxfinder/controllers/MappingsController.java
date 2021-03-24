@@ -13,6 +13,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.util.IOUtils;
 import org.pdxfinder.*;
+import org.pdxfinder.constants.MappingEntityType;
 import org.pdxfinder.dto.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -297,6 +298,18 @@ public class MappingsController {
     }
 
     zipOutputStream.close();
+
+  }
+
+  @PostMapping("rebuildMappingEntities")
+  public void rebuildMappingEntitiesInDataBase() {
+    mappingService.rebuildDatabaseFromRulesFiles();
+  }
+
+  @PostMapping("rebuildRulesJsonFromDatabase")
+  public void rebuildRulesJsonFromDatabase() {
+    mappingService.writeMappingsToFile(MappingEntityType.DIAGNOSIS.getLabel());
+    mappingService.writeMappingsToFile(MappingEntityType.TREATMENT.getLabel());
   }
 
 }

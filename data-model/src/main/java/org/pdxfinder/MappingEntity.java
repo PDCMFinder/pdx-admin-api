@@ -8,7 +8,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
 public class MappingEntity {
 
@@ -22,6 +28,7 @@ public class MappingEntity {
     /**
      * Describes what kind of mapping info is held in the entity, ie: diagnosis, drug, etc
      */
+    @EqualsAndHashCode.Include
     private String entityType;
 
 
@@ -30,6 +37,7 @@ public class MappingEntity {
      * IE: ["diagnosis", "source", "primaryTissue", "tumorType"]
      * The elements of this list is used as headers when listing the mapping entities as well as keys to the mappingValues
      */
+    @EqualsAndHashCode.Include
     @ElementCollection
     @CollectionTable(name="mapping_labels", joinColumns = @JoinColumn(name = "mapping_entity_id"))
     @Column(name="mapping_labels")
@@ -40,6 +48,7 @@ public class MappingEntity {
      * The corresponding values for the mapping labels
      * IE: ["diagnosis"=>"Carcinoma", "source"=>"JAX"]
      */
+    @EqualsAndHashCode.Include
     @ElementCollection
     @CollectionTable(name="mapping_values", joinColumns = @JoinColumn(name = "mapping_entity_id"))
     @Column(name="mapping_values", columnDefinition="Text")
@@ -50,6 +59,7 @@ public class MappingEntity {
      * The term that the entity is mapped to. The value of this attribute should be either null (indicating that the
      * entity is not mapped to anything yet) or an existing ontology term.
      */
+    @EqualsAndHashCode.Include
     private String mappedTermLabel;
 
 
@@ -59,17 +69,20 @@ public class MappingEntity {
      * The term url that the entity is mapped to. The value of this attribute should be either null (indicating that the
      * entity is not mapped to anything yet) or an existing ontology term url.
      */
+    @EqualsAndHashCode.Include
     private String mappedTermUrl;
 
     /**
      * Describes whether the mapping rule is direct or inferred
      */
+    @EqualsAndHashCode.Include
     private String mapType;
 
 
     /**
      * Gives info about the justification: ie. manual curation, combination of diagnosis and primary tumor, etc
      */
+    @EqualsAndHashCode.Include
     private String justification;
 
     /**
@@ -78,12 +91,14 @@ public class MappingEntity {
      * Mapped : the entity is mapped to a term but the mapping is not yet verified by the institute
      * Verified : the entity is mapped to a term and the mapping is verified by the institute
      */
+    @EqualsAndHashCode.Include
     private String status;
 
 
     /**
      * A list of entities that are similar to the current entity. This list is empty if the entity's mappedTermLabel is not null.
      */
+    @EqualsAndHashCode.Include
     @ElementCollection
     @CollectionTable(name="mapping_suggest", joinColumns = @JoinColumn(name = "mapping_entity_id"))
     @Column(name="mapping_values")
@@ -290,22 +305,5 @@ public class MappingEntity {
         sb.append("}");
 
         return sb.toString();
-
-
-        /*
-        return "{" +
-                "\"entityId\":" + entityId + ", \n" +
-                "\"entityType\": \"" + entityType + "\", \n" +
-                ", mappingLabels:" + mappingLabels +
-                ", mappingValues:" + mappingValues +
-                ", mappedTermLabel:'" + mappedTermLabel + '\'' +
-                ", mappedTermUrl:'" + mappedTermUrl + '\'' +
-                ", mapType:'" + mapType + '\'' +
-                ", justification:'" + justification + '\'' +
-                ", status:'" + status + '\'' +
-                ", suggestedMappings:" + suggestedMappings +
-                '}';
-
-                */
     }
 }

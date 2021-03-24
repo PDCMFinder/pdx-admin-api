@@ -1,7 +1,7 @@
 {
   "mappings":[
     {
-      "entityId":1527,
+      "entityId":3,
       "entityType":"treatment",
       "mappingLabels":[
         "DataSource",
@@ -23,7 +23,7 @@
       "dateUpdated":null
     },
     {
-      "entityId":1528,
+      "entityId":4,
       "entityType":"treatment",
       "mappingLabels":[
         "DataSource",
@@ -42,28 +42,6 @@
 
       ],
       "dateCreated":1614090292783,
-      "dateUpdated":null
-    },
-    {
-      "entityId":1529,
-      "entityType":"treatment",
-      "mappingLabels":[
-        "DataSource",
-        "TreatmentName"
-      ],
-      "mappingValues":{
-        "DataSource":"jax",
-        "TreatmentName":"Saline"
-      },
-      "mappedTermLabel":"Saline",
-      "mappedTermUrl":"http://purl.obolibrary.org/obo/NCIT_C821",
-      "mapType":"direct",
-      "justification":"0",
-      "status":"validated",
-      "suggestedMappings":[
-
-      ],
-      "dateCreated":1614090292784,
       "dateUpdated":null
     }
   ]
