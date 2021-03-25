@@ -10,7 +10,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.pdxfinder.MappingService.MAPPING_RULE_NOT_FOUND;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,6 +22,7 @@ import org.pdxfinder.constants.DiagnosisMappingLabels;
 import org.pdxfinder.constants.MappingEntityType;
 import org.pdxfinder.constants.TreatmentMappingLabels;
 import org.pdxfinder.repositories.MappingEntityRepository;
+import org.pdxfinder.util.MappingEntityUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -220,7 +220,7 @@ class MappingServiceTest {
     values1.put(DiagnosisMappingLabels.TUMOR_TYPE.getLabel(), "primary");
     mappingEntity1.setMappingValues(values1);
     mappingEntity1.setSuggestedMappings(Collections.emptyList());
-    mappingEntity1.setStatus("Created");
+    mappingEntity1.setStatus("validated");
 
     MappingEntity mappingEntity2 = new MappingEntity();
     mappingEntity2.setEntityId(2L);
@@ -238,7 +238,7 @@ class MappingServiceTest {
     mappingEntity2.setSuggestedMappings(Collections.emptyList());
     mappingEntity2.setMapType("direct");
     mappingEntity2.setJustification("0");
-    mappingEntity2.setStatus("Created");
+    mappingEntity2.setStatus("validated");
 
     MappingEntity mappingEntity3 = new MappingEntity();
     mappingEntity3.setEntityId(3L);
@@ -254,7 +254,7 @@ class MappingServiceTest {
     mappingEntity3.setSuggestedMappings(Collections.emptyList());
     mappingEntity3.setMapType("inferred");
     mappingEntity3.setJustification("0");
-    mappingEntity3.setStatus("Created");
+    mappingEntity3.setStatus("validated");
 
     MappingEntity mappingEntity4 = new MappingEntity();
     mappingEntity4.setEntityId(4L);
@@ -283,15 +283,23 @@ class MappingServiceTest {
   @Test
   public void givenMappingRulesExistWhenRebuildDatabaseFromRulesFilesThenSuccess() {
     testInstance.rebuildDatabaseFromRulesFiles();
-
-    verify(mappingEntityRepository, times(1)).saveAll(testInstance.getMappingContainer().getEntityList());
     List<MappingEntity> mappingEntities = testInstance.getMappingContainer().getEntityList();
+
     verify(mappingEntityRepository, times(1)).saveAll(mappingEntities);
     assertThat(mappingEntities.size(), is(4));
     List<MappingEntity> expectedMappingEntities = getExpectedMappingEntities();
-    assertThat(mappingEntities.get(0), is(expectedMappingEntities.get(0)));
-    assertThat(mappingEntities.get(1), is(expectedMappingEntities.get(1)));
-    assertThat(mappingEntities.get(2), is(expectedMappingEntities.get(2)));
-    assertThat(mappingEntities.get(3), is(expectedMappingEntities.get(3)));
+    System.out.println(expectedMappingEntities);
+    assertThat(
+        MappingEntityUtil.findById(mappingEntities, 1L),
+        is( MappingEntityUtil.findById(expectedMappingEntities, 1L)));
+    assertThat(
+        MappingEntityUtil.findById(mappingEntities, 2L),
+        is( MappingEntityUtil.findById(expectedMappingEntities, 2L)));
+    assertThat(
+        MappingEntityUtil.findById(mappingEntities, 3L),
+        is( MappingEntityUtil.findById(expectedMappingEntities, 3L)));
+    assertThat(
+        MappingEntityUtil.findById(mappingEntities, 4L),
+        is( MappingEntityUtil.findById(expectedMappingEntities, 4L)));
   }
 }

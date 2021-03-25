@@ -10,12 +10,16 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import org.apache.commons.codec.digest.DigestUtils;
 
 @Getter
 @Setter
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
+@RequiredArgsConstructor
 public class MappingEntity {
 
     /**
@@ -121,12 +125,8 @@ public class MappingEntity {
      * The unique String that identifies a Mapping
      */
     @JsonIgnore
-    @Column(unique = true, nullable = false, columnDefinition="Text") // @Lob
+    @Column(unique = true, nullable = false)
     private String mappingKey;
-
-
-    public MappingEntity() {
-    }
 
     public MappingEntity(String entityType, List<String> mappingLabels, Map<String, String> mappingValues) {
 
@@ -142,125 +142,6 @@ public class MappingEntity {
 
     }
 
-    public MappingEntity(String entityType, List<String> mappingLabels, Map<String, String> mappingValues,
-                         String mappedTermLabel, String status, List<MappingEntity> suggestedMappings, Date dateCreated,
-                         Date dateUpdated) {
-
-        this.entityType = entityType;
-        this.mappingLabels = mappingLabels;
-        this.mappingValues = mappingValues;
-        this.mappedTermLabel = mappedTermLabel;
-        this.status = status;
-        this.suggestedMappings = suggestedMappings;
-        this.dateCreated = dateCreated;
-        this.dateUpdated = dateUpdated;
-    }
-
-
-    public Long getEntityId() {
-        return entityId;
-    }
-
-    public void setEntityId(Long entityId) {
-        this.entityId = entityId;
-    }
-
-    public String getEntityType() {
-        return entityType;
-    }
-
-    public void setEntityType(String entityType) {
-        this.entityType = entityType;
-    }
-
-    public List<String> getMappingLabels() {
-        return mappingLabels;
-    }
-
-    public void setMappingLabels(List<String> mappingLabels) {
-        this.mappingLabels = mappingLabels;
-    }
-
-    public Map<String, String> getMappingValues() {
-        return mappingValues;
-    }
-
-    public void setMappingValues(Map<String, String> mappingValues) {
-        this.mappingValues = mappingValues;
-    }
-
-    public String getMappedTermLabel() {
-        return mappedTermLabel;
-    }
-
-    public void setMappedTermLabel(String mappedTermLabel) {
-        this.mappedTermLabel = mappedTermLabel;
-    }
-
-    public String getMapType() {
-        return mapType;
-    }
-
-    public void setMapType(String mapType) {
-        this.mapType = mapType;
-    }
-
-    public String getJustification() {
-        return justification;
-    }
-
-    public void setJustification(String justification) {
-        this.justification = justification;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public List<MappingEntity> getSuggestedMappings() {
-        return suggestedMappings;
-    }
-
-    public void setSuggestedMappings(List<MappingEntity> suggestedMappings) {
-        this.suggestedMappings = suggestedMappings;
-    }
-
-    public Date getDateCreated() {
-        return dateCreated;
-    }
-
-    public void setDateCreated(Date dateCreated) {
-        this.dateCreated = dateCreated;
-    }
-
-    public Date getDateUpdated() {
-        return dateUpdated;
-    }
-
-    public void setDateUpdated(Date dateUpdated) {
-        this.dateUpdated = dateUpdated;
-    }
-
-    public String getMappedTermUrl() {
-        return mappedTermUrl;
-    }
-
-    public void setMappedTermUrl(String mappedTermUrl) {
-        this.mappedTermUrl = mappedTermUrl;
-    }
-
-    public String getMappingKey() {
-        return mappingKey;
-    }
-
-    public void setMappingKey(String mappingKey) {
-        this.mappingKey = mappingKey;
-    }
-
     public String generateMappingKey(){
 
         String key = entityType;
@@ -271,7 +152,7 @@ public class MappingEntity {
         }
 
         key = key.replaceAll("[^a-zA-Z0-9 _-]","");
-
+        key = DigestUtils.sha256Hex(key);
         return key.toLowerCase();
 
     }
