@@ -280,7 +280,6 @@ public class MappingsController {
     // create a list to add files to be zipped
     ArrayList<File> files = new ArrayList<>(mappingRulesPaths.size());
     for (Map.Entry<String, String> entry : mappingRulesPaths.entrySet()) {
-      System.out.println(entry.getKey() + ":" + entry.getValue());
       File mappingsFile = new File(entry.getValue());
       files.add(mappingsFile);
     }
@@ -310,6 +309,14 @@ public class MappingsController {
   public void rebuildRulesJsonFromDatabase() {
     mappingService.writeMappingsToFile(MappingEntityType.DIAGNOSIS.getLabel());
     mappingService.writeMappingsToFile(MappingEntityType.TREATMENT.getLabel());
+  }
+
+  @RequestMapping(value="/getEurOPDXMappingsRules", produces="application/zip")
+  public void getEurOPDXMappingsRules(HttpServletResponse response) throws IOException {
+    response.setStatus(HttpServletResponse.SC_OK);
+    String fileName = "EurOPDX_mappingRules_" + new SimpleDateFormat("yyyyMMddHHmm'.zip'").format(new Date());
+    response.addHeader("Content-Disposition", "attachment; filename=\""+fileName+"\"");
+    mappingService.writeEurOPDXMappingsRules(response.getOutputStream());
   }
 
 }

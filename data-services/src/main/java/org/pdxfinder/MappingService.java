@@ -7,6 +7,9 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import org.apache.commons.codec.digest.DigestUtils;
+import java.io.OutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -836,6 +839,38 @@ public class MappingService {
     List<MappingEntity> mappingEntities = container.getEntityList();
     mappingEntityRepository.saveAll(mappingEntities);
     log.info("Database rebuild. Mapping data count: " + mappingEntityRepository.count());
+  }
+
+  public void writeEurOPDXMappingsRules(OutputStream outputStream) throws IOException {
+    List<String> dataSourcesToExport = new ArrayList<>(Arrays.asList(
+        "Curie-BC",
+        "Curie-LC",
+        "Curie-OC",
+        "IRCC-CRC",
+        "IRCC-GC",
+        "TRACE",
+        "UOC-BC",
+        "UOM-BC",
+        "VHIO-BC",
+        "VHIO-CRC"
+    ));
+
+    List<MappingEntity> diagnosisMappings =
+        getMappingsByDSAndType(dataSourcesToExport, MappingEntityType.DIAGNOSIS.getLabel()).getEntityList();
+    List<MappingEntity> treatmentMappings =
+        getMappingsByDSAndType(dataSourcesToExport, MappingEntityType.TREATMENT.getLabel()).getEntityList();
+    Gson gson = new Gson();
+    String diagnosisMappingsJson = gson.toJson(diagnosisMappings);
+    String treatmentMappingsJson = gson.toJson(treatmentMappings);
+
+    try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
+      zos.putNextEntry(new ZipEntry("EurOPDX_diagnosis_mappings.json"));
+      zos.write(diagnosisMappingsJson.getBytes());
+      zos.closeEntry();
+      zos.putNextEntry(new ZipEntry("EurOPDX_treatment_mappings.json"));
+      zos.write(treatmentMappingsJson.getBytes());
+      zos.closeEntry();
+    }
   }
 
 }
