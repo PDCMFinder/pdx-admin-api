@@ -6,6 +6,7 @@ import com.google.gson.Gson;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import org.apache.commons.codec.digest.DigestUtils;
 import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -75,6 +76,7 @@ public class MappingService {
         MappingEntityType.DIAGNOSIS.getLabel() + "__" + dataSource + "__" + diagnosis + "__"
         + originTissue + "__" + tumorType;
     mapKey = mapKey.replaceAll("[^a-zA-Z0-9 _-]", "").toLowerCase();
+    mapKey = DigestUtils.sha256Hex(mapKey);
     return mapKey;
   }
 
@@ -83,6 +85,7 @@ public class MappingService {
     String mapKey =
         MappingEntityType.TREATMENT.getLabel() + "__" + dataSource + "__" + treatmentName;
     mapKey = mapKey.replaceAll("[^a-zA-Z0-9 _-]", "").toLowerCase();
+    mapKey = DigestUtils.sha256Hex(mapKey);
     return mapKey;
   }
 
@@ -869,6 +872,5 @@ public class MappingService {
       zos.closeEntry();
     }
   }
-
 
 }

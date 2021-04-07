@@ -1,5 +1,6 @@
 package org.pdxfinder;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.pdxfinder.constants.CSV;
 import org.pdxfinder.constants.MappingEntityType;
@@ -204,7 +205,7 @@ public class CSVHandler {
 
         }
 
-
+        mappingKey = DigestUtils.sha256Hex(mappingKey);
         return mappingKey;
     }
 }
