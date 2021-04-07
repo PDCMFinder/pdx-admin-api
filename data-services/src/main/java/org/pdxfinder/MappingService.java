@@ -838,10 +838,4 @@ public class MappingService {
     log.info("Database rebuild. Mapping data count: " + mappingEntityRepository.count());
   }
 
-  public List<MappingEntity> getAllMappingEntities() {
-    return mappingEntityRepository.findAll();
-  }
-
-
-
 }
