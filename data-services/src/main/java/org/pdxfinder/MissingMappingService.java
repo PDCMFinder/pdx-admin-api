@@ -54,7 +54,7 @@ public class MissingMappingService {
 
     public void readDataFromTemplates(List<Path> folders) {
 
-        PathMatcher metadataFile = FileSystems.getDefault().getPathMatcher("glob:**{metadata-sam,metadata-load}*.tsv");
+        PathMatcher metadataFile = FileSystems.getDefault().getPathMatcher("glob:**{metadata-sample,metadata-loader}.tsv");
         PathMatcher drugDataFile = FileSystems.getDefault().getPathMatcher("glob:**{drug,treatment}*.tsv");
 
         for (Path p : folders) {
