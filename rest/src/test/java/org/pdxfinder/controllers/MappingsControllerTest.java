@@ -332,6 +332,20 @@ class MappingsControllerTest {
         .andExpect(status().isOk());
   }
 
+  @Test
+  public void givenMappingsRulesExistWhenGetZipOfMappingRulesThenReturnZip() throws Exception {
+    List<MappingEntity> mappingEntities = new ArrayList<>();
+    MappingEntity mockedMappingEntity = getMappingEntity();
+    mappingEntities.add(mockedMappingEntity);
+    String url = MAPPINGS_URL + "mappingRules";
+    PaginationDTO paginationDTO = new PaginationDTO();
+    paginationDTO.setPage(PAGE);
+    paginationDTO.setSize(SIZE);
+    paginationDTO.setTotalElements(TOTAL_ELEMENTS);
+
+    this.mockMvc.perform(get(url)).andExpect(status().isOk());
+  }
+
   private MappingContainer getMappingContainer() {
     MappingContainer mappingContainer = new MappingContainer();
     TreeMap<String, MappingEntity> mappings = new TreeMap<>();

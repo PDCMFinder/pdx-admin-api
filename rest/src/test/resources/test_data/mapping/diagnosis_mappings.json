@@ -1,0 +1,56 @@
+{
+  "mappings":[
+    {
+      "entityId":1,
+      "entityType":"diagnosis",
+      "mappingLabels":[
+        "DataSource",
+        "SampleDiagnosis",
+        "OriginTissue",
+        "TumorType"
+      ],
+      "mappingValues":{
+        "OriginTissue":"blood",
+        "TumorType":"primary",
+        "SampleDiagnosis":"acute myeloid leukemia",
+        "DataSource":"jax"
+      },
+      "mappedTermLabel":"Acute Myeloid Leukemia",
+      "mappedTermUrl":"http://purl.obolibrary.org/obo/NCIT_C3171",
+      "mapType":"direct",
+      "justification":"0",
+      "status":"validated",
+      "suggestedMappings":[
+
+      ],
+      "dateCreated":1614090285640,
+      "dateUpdated":null
+    },
+    {
+      "entityId":2,
+      "entityType":"diagnosis",
+      "mappingLabels":[
+        "DataSource",
+        "SampleDiagnosis",
+        "OriginTissue",
+        "TumorType"
+      ],
+      "mappingValues":{
+        "OriginTissue":"bone marrow",
+        "TumorType":"primary",
+        "SampleDiagnosis":"acute myeloid leukemia",
+        "DataSource":"jax"
+      },
+      "mappedTermLabel":"Acute Myeloid Leukemia",
+      "mappedTermUrl":"http://purl.obolibrary.org/obo/NCIT_C3171",
+      "mapType":"direct",
+      "justification":"0",
+      "status":"validated",
+      "suggestedMappings":[
+
+      ],
+      "dateCreated":1614090285640,
+      "dateUpdated":null
+    }
+  ]
+}

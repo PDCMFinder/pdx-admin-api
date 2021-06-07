@@ -1,5 +1,6 @@
 package org.pdxfinder;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.pdxfinder.constants.CSV;
 import org.pdxfinder.constants.MappingEntityType;
@@ -181,7 +182,7 @@ public class CSVHandler {
 
         String mappingKey = "";
 
-        if (entityType.equals(MappingEntityType.diagnosis.get())) {
+        if (entityType.equals(MappingEntityType.DIAGNOSIS.getLabel())) {
 
             mappingKey = String.join("__",
                                      entityType,
@@ -193,7 +194,7 @@ public class CSVHandler {
             ).toLowerCase().replaceAll("[^a-zA-Z0-9 _-]", "");
 
         }
-        else if (entityType.equals(MappingEntityType.treatment.get())) {
+        else if (entityType.equals(MappingEntityType.TREATMENT.getLabel())) {
 
             mappingKey = String.join("__",
                                      entityType,
@@ -204,7 +205,7 @@ public class CSVHandler {
 
         }
 
-
+        mappingKey = DigestUtils.sha256Hex(mappingKey);
         return mappingKey;
     }
 }

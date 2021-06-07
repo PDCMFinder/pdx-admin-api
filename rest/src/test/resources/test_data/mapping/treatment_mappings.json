@@ -1,0 +1,48 @@
+{
+  "mappings":[
+    {
+      "entityId":3,
+      "entityType":"treatment",
+      "mappingLabels":[
+        "DataSource",
+        "TreatmentName"
+      ],
+      "mappingValues":{
+        "DataSource":"ircc-crc",
+        "TreatmentName":"0.9% Solution of Sodium Chloride"
+      },
+      "mappedTermLabel":"Saline",
+      "mappedTermUrl":"http://purl.obolibrary.org/obo/NCIT_C821",
+      "mapType":"inferred",
+      "justification":"0",
+      "status":"validated",
+      "suggestedMappings":[
+
+      ],
+      "dateCreated":1614090292783,
+      "dateUpdated":null
+    },
+    {
+      "entityId":4,
+      "entityType":"treatment",
+      "mappingLabels":[
+        "DataSource",
+        "TreatmentName"
+      ],
+      "mappingValues":{
+        "DataSource":"ircc-crc",
+        "TreatmentName":"Erbitux, Cetuximab"
+      },
+      "mappedTermLabel":"Cetuximab",
+      "mappedTermUrl":"http://purl.obolibrary.org/obo/NCIT_C1723",
+      "mapType":"inferred",
+      "justification":"0",
+      "status":"",
+      "suggestedMappings":[
+
+      ],
+      "dateCreated":1614090292783,
+      "dateUpdated":null
+    }
+  ]
+}

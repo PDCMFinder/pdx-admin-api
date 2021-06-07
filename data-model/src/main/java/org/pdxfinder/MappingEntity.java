@@ -8,8 +8,17 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.apache.commons.codec.digest.DigestUtils;
 
+@Getter
+@Setter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @Entity
+@RequiredArgsConstructor
 public class MappingEntity {
 
     /**
@@ -22,6 +31,7 @@ public class MappingEntity {
     /**
      * Describes what kind of mapping info is held in the entity, ie: diagnosis, drug, etc
      */
+    @EqualsAndHashCode.Include
     private String entityType;
 
 
@@ -30,6 +40,7 @@ public class MappingEntity {
      * IE: ["diagnosis", "source", "primaryTissue", "tumorType"]
      * The elements of this list is used as headers when listing the mapping entities as well as keys to the mappingValues
      */
+    @EqualsAndHashCode.Include
     @ElementCollection
     @CollectionTable(name="mapping_labels", joinColumns = @JoinColumn(name = "mapping_entity_id"))
     @Column(name="mapping_labels")
@@ -40,6 +51,7 @@ public class MappingEntity {
      * The corresponding values for the mapping labels
      * IE: ["diagnosis"=>"Carcinoma", "source"=>"JAX"]
      */
+    @EqualsAndHashCode.Include
     @ElementCollection
     @CollectionTable(name="mapping_values", joinColumns = @JoinColumn(name = "mapping_entity_id"))
     @Column(name="mapping_values", columnDefinition="Text")
@@ -50,6 +62,7 @@ public class MappingEntity {
      * The term that the entity is mapped to. The value of this attribute should be either null (indicating that the
      * entity is not mapped to anything yet) or an existing ontology term.
      */
+    @EqualsAndHashCode.Include
     private String mappedTermLabel;
 
 
@@ -59,17 +72,20 @@ public class MappingEntity {
      * The term url that the entity is mapped to. The value of this attribute should be either null (indicating that the
      * entity is not mapped to anything yet) or an existing ontology term url.
      */
+    @EqualsAndHashCode.Include
     private String mappedTermUrl;
 
     /**
      * Describes whether the mapping rule is direct or inferred
      */
+    @EqualsAndHashCode.Include
     private String mapType;
 
 
     /**
      * Gives info about the justification: ie. manual curation, combination of diagnosis and primary tumor, etc
      */
+    @EqualsAndHashCode.Include
     private String justification;
 
     /**
@@ -78,12 +94,14 @@ public class MappingEntity {
      * Mapped : the entity is mapped to a term but the mapping is not yet verified by the institute
      * Verified : the entity is mapped to a term and the mapping is verified by the institute
      */
+    @EqualsAndHashCode.Include
     private String status;
 
 
     /**
      * A list of entities that are similar to the current entity. This list is empty if the entity's mappedTermLabel is not null.
      */
+    @EqualsAndHashCode.Include
     @ElementCollection
     @CollectionTable(name="mapping_suggest", joinColumns = @JoinColumn(name = "mapping_entity_id"))
     @Column(name="mapping_values")
@@ -106,12 +124,8 @@ public class MappingEntity {
      * The unique String that identifies a Mapping
      */
     @JsonIgnore
-    @Column(unique = true, nullable = false, columnDefinition="Text") // @Lob
+    @Column(unique = true, nullable = false)
     private String mappingKey;
-
-
-    public MappingEntity() {
-    }
 
     public MappingEntity(String entityType, List<String> mappingLabels, Map<String, String> mappingValues) {
 
@@ -127,125 +141,6 @@ public class MappingEntity {
 
     }
 
-    public MappingEntity(String entityType, List<String> mappingLabels, Map<String, String> mappingValues,
-                         String mappedTermLabel, String status, List<MappingEntity> suggestedMappings, Date dateCreated,
-                         Date dateUpdated) {
-
-        this.entityType = entityType;
-        this.mappingLabels = mappingLabels;
-        this.mappingValues = mappingValues;
-        this.mappedTermLabel = mappedTermLabel;
-        this.status = status;
-        this.suggestedMappings = suggestedMappings;
-        this.dateCreated = dateCreated;
-        this.dateUpdated = dateUpdated;
-    }
-
-
-    public Long getEntityId() {
-        return entityId;
-    }
-
-    public void setEntityId(Long entityId) {
-        this.entityId = entityId;
-    }
-
-    public String getEntityType() {
-        return entityType;
-    }
-
-    public void setEntityType(String entityType) {
-        this.entityType = entityType;
-    }
-
-    public List<String> getMappingLabels() {
-        return mappingLabels;
-    }
-
-    public void setMappingLabels(List<String> mappingLabels) {
-        this.mappingLabels = mappingLabels;
-    }
-
-    public Map<String, String> getMappingValues() {
-        return mappingValues;
-    }
-
-    public void setMappingValues(Map<String, String> mappingValues) {
-        this.mappingValues = mappingValues;
-    }
-
-    public String getMappedTermLabel() {
-        return mappedTermLabel;
-    }
-
-    public void setMappedTermLabel(String mappedTermLabel) {
-        this.mappedTermLabel = mappedTermLabel;
-    }
-
-    public String getMapType() {
-        return mapType;
-    }
-
-    public void setMapType(String mapType) {
-        this.mapType = mapType;
-    }
-
-    public String getJustification() {
-        return justification;
-    }
-
-    public void setJustification(String justification) {
-        this.justification = justification;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public List<MappingEntity> getSuggestedMappings() {
-        return suggestedMappings;
-    }
-
-    public void setSuggestedMappings(List<MappingEntity> suggestedMappings) {
-        this.suggestedMappings = suggestedMappings;
-    }
-
-    public Date getDateCreated() {
-        return dateCreated;
-    }
-
-    public void setDateCreated(Date dateCreated) {
-        this.dateCreated = dateCreated;
-    }
-
-    public Date getDateUpdated() {
-        return dateUpdated;
-    }
-
-    public void setDateUpdated(Date dateUpdated) {
-        this.dateUpdated = dateUpdated;
-    }
-
-    public String getMappedTermUrl() {
-        return mappedTermUrl;
-    }
-
-    public void setMappedTermUrl(String mappedTermUrl) {
-        this.mappedTermUrl = mappedTermUrl;
-    }
-
-    public String getMappingKey() {
-        return mappingKey;
-    }
-
-    public void setMappingKey(String mappingKey) {
-        this.mappingKey = mappingKey;
-    }
-
     public String generateMappingKey(){
 
         String key = entityType;
@@ -256,7 +151,7 @@ public class MappingEntity {
         }
 
         key = key.replaceAll("[^a-zA-Z0-9 _-]","");
-
+        key = DigestUtils.sha256Hex(key);
         return key.toLowerCase();
 
     }
@@ -290,22 +185,5 @@ public class MappingEntity {
         sb.append("}");
 
         return sb.toString();
-
-
-        /*
-        return "{" +
-                "\"entityId\":" + entityId + ", \n" +
-                "\"entityType\": \"" + entityType + "\", \n" +
-                ", mappingLabels:" + mappingLabels +
-                ", mappingValues:" + mappingValues +
-                ", mappedTermLabel:'" + mappedTermLabel + '\'' +
-                ", mappedTermUrl:'" + mappedTermUrl + '\'' +
-                ", mapType:'" + mapType + '\'' +
-                ", justification:'" + justification + '\'' +
-                ", status:'" + status + '\'' +
-                ", suggestedMappings:" + suggestedMappings +
-                '}';
-
-                */
     }
 }

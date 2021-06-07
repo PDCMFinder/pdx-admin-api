@@ -3,6 +3,13 @@ package org.pdxfinder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import org.apache.commons.codec.digest.DigestUtils;
+import java.io.OutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,20 +28,15 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
-
 
 @Service
 public class MappingService {
 
   private final static Logger log = LoggerFactory.getLogger(MappingService.class);
-  private ObjectMapper mapper = new ObjectMapper();
+  private final ObjectMapper mapper = new ObjectMapper();
 
   @Value("${data-dir}")
   private String rootDir;
@@ -49,6 +51,7 @@ public class MappingService {
 
   private final PaginationService paginationService;
 
+  static final String MAPPING_RULE_NOT_FOUND = "%s mappings rules file not found at %s.";
 
   @Autowired
   public MappingService(
@@ -62,27 +65,32 @@ public class MappingService {
     container = new MappingContainer();
   }
 
+  public MappingContainer getMappingContainer() {
+    return container;
+  }
+
   public String getDiagnosisMappingKey(
       String dataSource, String diagnosis, String originTissue, String tumorType) {
 
     String mapKey =
-        MappingEntityType.diagnosis.get() + "__" + dataSource + "__" + diagnosis + "__"
+        MappingEntityType.DIAGNOSIS.getLabel() + "__" + dataSource + "__" + diagnosis + "__"
         + originTissue + "__" + tumorType;
     mapKey = mapKey.replaceAll("[^a-zA-Z0-9 _-]", "").toLowerCase();
+    mapKey = DigestUtils.sha256Hex(mapKey);
     return mapKey;
   }
 
   public String getTreatmentMappingKey(String dataSource, String treatmentName) {
 
     String mapKey =
-        MappingEntityType.treatment.get() + "__" + dataSource + "__" + treatmentName;
+        MappingEntityType.TREATMENT.getLabel() + "__" + dataSource + "__" + treatmentName;
     mapKey = mapKey.replaceAll("[^a-zA-Z0-9 _-]", "").toLowerCase();
+    mapKey = DigestUtils.sha256Hex(mapKey);
     return mapKey;
   }
 
   public MappingEntity getDiagnosisMapping(
       String dataSource, String diagnosis, String originTissue, String tumorType) {
-
     if (!INITIALIZED) {
       loadRules("json");
     }
@@ -97,13 +105,6 @@ public class MappingService {
     }
     String mapKey = getTreatmentMappingKey(dataSource, treatmentName);
     return container.getEntityById(mapKey);
-  }
-
-  public MappingContainer getInitializedContainer() {
-    if (!INITIALIZED) {
-      loadRules("json");
-    }
-    return container;
   }
 
   public void saveMappingsToFile(String fileName, List<MappingEntity> maprules) {
@@ -146,42 +147,19 @@ public class MappingService {
 
     log.info("Loading mapping rules");
 
-    if (source.equals("json")) {
+    if ("json".equals(source)) {
+      Map<String, String> mappingRulesPaths = getMappingRulesPaths();
+      String diagnosisMappingsFilePath = mappingRulesPaths.get("diagnosis");
+      if (diagnosisMappingsFilePath != null) {
+        loadDiagnosisMappings(diagnosisMappingsFilePath);
+      }
+      String treatmentMappingsFilePath = mappingRulesPaths.get("treatment");
+      if (treatmentMappingsFilePath != null) {
 
-      String mappingRulesDir = rootDir + "/mapping";
-      File folder = new File(mappingRulesDir);
-
-      if (folder.exists()) {
-
-        String diagnosisMappingsFilePath = mappingRulesDir + "/diagnosis_mappings.json";
-        String treatmentMappingsFilePath = mappingRulesDir + "/treatment_mappings.json";
-
-        File diagnosisFile = new File(diagnosisMappingsFilePath);
-        File treatmentFile = new File(treatmentMappingsFilePath);
-
-        if (diagnosisFile.exists()) {
-
-          loadDiagnosisMappings(diagnosisMappingsFilePath);
-        } else {
-          log.error("Diagnosis mappings file not found at " + diagnosisMappingsFilePath);
-        }
-
-        if (treatmentFile.exists()) {
-
-          loadTreatmentMappings(treatmentMappingsFilePath);
-        } else {
-          log.error("Treatment mappings file not found at " + treatmentMappingsFilePath);
-        }
-
-
-      } else {
-
-        log.error("Mapping rules directory not found at " + mappingRulesDir);
-
+        loadTreatmentMappings(treatmentMappingsFilePath);
       }
 
-
-    } else if (source.equals("h2")) {
+    } else if ("h2".equals(source)) {
 
     } else {
 
@@ -189,6 +167,39 @@ public class MappingService {
     }
 
     INITIALIZED = true;
+  }
+
+  public Map<String, String> getMappingRulesPaths() {
+    Map<String, String> mappingRulesPaths = new HashMap<>();
+    String mappingRulesDir = getMappingDirectory();
+    String diagnosisMappingsFilePath = mappingRulesDir + "/" + getDiagnosisJsonFileName();
+    String treatmentMappingsFilePath = mappingRulesDir + "/" + getTreatmentJsonFileName();
+    checkRulesExist(MappingEntityType.DIAGNOSIS, diagnosisMappingsFilePath);
+    checkRulesExist(MappingEntityType.TREATMENT, treatmentMappingsFilePath);
+    mappingRulesPaths.put(MappingEntityType.DIAGNOSIS.getLabel(), diagnosisMappingsFilePath);
+    mappingRulesPaths.put(MappingEntityType.TREATMENT.getLabel(), treatmentMappingsFilePath);
+
+    return mappingRulesPaths;
+  }
+
+  String getMappingDirectory() {
+    return rootDir + "/mapping";
+  }
+
+  String getDiagnosisJsonFileName() {
+    return "diagnosis_mappings.json";
+  }
+
+  String getTreatmentJsonFileName() {
+    return "treatment_mappings.json";
+  }
+
+  private void checkRulesExist(MappingEntityType mappingEntityType, String fileName) {
+    File rulesFile = new File(fileName);
+    if (!rulesFile.exists()) {
+      throw new IllegalArgumentException(
+          String.format(MAPPING_RULE_NOT_FOUND, mappingEntityType.getLabel(), fileName));
+    }
   }
 
 
@@ -217,10 +228,11 @@ public class MappingService {
           String originTissue = mappingVal.getString("OriginTissue");
           String tumorType = mappingVal.getString("TumorType");
           String ontologyTerm = row.getString("mappedTermLabel");
-          String mapType = row.getString("mapType");
-          String justification = row.getString("justification");
-          String mappedTermUrl = row.getString("mappedTermUrl");
+          String mapType = row.optString("mapType").toLowerCase();
+          String justification = row.optString("justification").toLowerCase();
+          String mappedTermUrl = row.optString("mappedTermUrl");
           Long entityId = row.getLong("entityId");
+          String status = row.optString("status").toLowerCase();
 
           //if(ds!= null && !ds.toLowerCase().equals(dataSource.toLowerCase())) continue;
 
@@ -272,7 +284,7 @@ public class MappingService {
           mappingValues.put("OriginTissue", originTissue);
           mappingValues.put("TumorType", tumorType);
 
-          MappingEntity me = new MappingEntity(MappingEntityType.diagnosis.get(),
+          MappingEntity me = new MappingEntity(MappingEntityType.DIAGNOSIS.getLabel(),
               getDiagnosisMappingLabels(), mappingValues);
           me.setMappedTermLabel(ontologyTerm);
           me.setMapType(mapType);
@@ -280,6 +292,10 @@ public class MappingService {
           me.setEntityId(entityId);
           me.setMappedTermUrl(mappedTermUrl);
           me.setMappingKey(me.generateMappingKey());
+          if (!status.isBlank())
+          {
+            me.setStatus(status);
+          }
 
           container.addEntity(me);
 
@@ -292,7 +308,6 @@ public class MappingService {
     }
 
   }
-
 
   private void loadTreatmentMappings(String file) {
 
@@ -311,10 +326,11 @@ public class MappingService {
           String dataSource = mappingVal.getString("DataSource");
           String treatmentName = mappingVal.getString("TreatmentName").toLowerCase();
           String ontologyTerm = row.getString("mappedTermLabel");
-          String mapType = row.getString("mapType");
-          String justification = row.getString("justification");
+          String mapType = row.optString("mapType").toLowerCase();
+          String justification = row.optString("justification").toLowerCase();
           String mappedTermUrl = row.getString("mappedTermUrl");
           Long entityId = row.getLong("entityId");
+          String status = row.optString("status").toLowerCase();
 
           if (ontologyTerm.equals("") || ontologyTerm == null) {
             continue;
@@ -334,7 +350,7 @@ public class MappingService {
           mappingValues.put("DataSource", dataSource);
           mappingValues.put("TreatmentName", treatmentName);
 
-          MappingEntity me = new MappingEntity(MappingEntityType.treatment.get(),
+          MappingEntity me = new MappingEntity(MappingEntityType.TREATMENT.getLabel(),
               getTreatmentMappingLabels(), mappingValues);
           me.setMappedTermLabel(ontologyTerm);
           me.setMapType(mapType);
@@ -342,6 +358,10 @@ public class MappingService {
           me.setEntityId(entityId);
           me.setMappedTermUrl(mappedTermUrl);
           me.setMappingKey(me.generateMappingKey());
+          if (!status.isBlank())
+          {
+            me.setStatus(status);
+          }
 
           container.addEntity(me);
 
@@ -353,56 +373,6 @@ public class MappingService {
     }
 
   }
-
-
-  public Map<String, List<MappingEntity>> getMissingDiagnosisMappings(String ds) {
-
-    MappingContainer mc = new MappingContainer();
-
-    if (ds == null || ds.isEmpty()) {
-
-    } else {
-
-    }
-
-    Map<String, List<MappingEntity>> entityMap = new HashMap<>();
-
-    List<MappingEntity> mappingEntities = mappingEntityRepository
-        .findByMappedTermLabel(null);  // new ArrayList<>();
-
-    entityMap.put("mappings", mappingEntities);
-    return entityMap;
-
-  }
-
-/*
-    public MappingContainer getSavedDiagnosisMappings(String ds){
-
-
-        if(!INITIALIZED){
-
-            loadRules("file");
-        }
-
-        //no filter, return everything
-        if(ds == null) return existingDiagnosisMappings;
-
-        MappingContainer mc = new MappingContainer();
-
-        List<MappingEntity> results = existingDiagnosisMappings.getMappings().values().stream().filter(
-                x -> x.getEntityType().equals("DIAGNOSIS") &&
-                        x.getMappingValues().get("DataSource").equals(ds)).collect(Collectors.toList());
-
-        results.forEach(x -> {
-            mc.addEntity(x);
-        });
-
-
-    return mc;
-    }
-
-*/
-
 
   public MappingContainer getMappingsByDSAndType(List<String> ds, String type) {
 
@@ -444,7 +414,6 @@ public class MappingService {
 
   }
 
-
   private List<MappingEntity> getSuggestionsForUnmappedEntity(MappingEntity me,
       MappingContainer mc) {
 
@@ -484,16 +453,12 @@ public class MappingService {
     TreeMap<Integer, List<MappingEntity>> orderedSuggestions = new TreeMap<>(unorderedSuggestions);
     List<MappingEntity> resultList = new ArrayList<>();
 
-    //log.info("UNMAPPED: "+me.getMappingValues().get("SampleDiagnosis")+" "+me.getMappingValues().get("OriginTissue"));
-
     int entityCounter = 0;
     for (Map.Entry<Integer, List<MappingEntity>> entry : orderedSuggestions.entrySet()) {
 
       Integer ix = entry.getKey();
       List<MappingEntity> list = entry.getValue();
       for (MappingEntity ment : list) {
-
-        //log.info("SUGG: " + ment.getMappingValues().get("SampleDiagnosis") + " " + ment.getMappingValues().get("OriginTissue") + "INDEX:" + ix);
         resultList.add(ment);
         entityCounter++;
 
@@ -508,7 +473,6 @@ public class MappingService {
     }
     return resultList;
   }
-
 
   private int getSimilarityIndexComponent(DamerauLevenshteinAlgorithm dla, String entityType,
       String entityAttribute, String attribute1, String attribute2) {
@@ -551,29 +515,6 @@ public class MappingService {
 
   }
 
-
-  String getTypeKeyValues(MappingEntity me) {
-
-    String key = "";
-
-    if (me == null) {
-      return key;
-    }
-
-    switch (me.getEntityType()) {
-
-      case "DIAGNOSIS":
-        for (String label : getDiagnosisMappingLabels()) {
-          key += me.getMappingValues().get(label).toLowerCase();
-        }
-        break;
-      default:
-        key = "";
-    }
-    return key;
-  }
-
-
   public List<String> getDiagnosisMappingLabels() {
 
     List<String> mapLabels = new ArrayList<>();
@@ -594,12 +535,6 @@ public class MappingService {
     return mapLabels;
   }
 
-
-  private int getStringSimilarity(DamerauLevenshteinAlgorithm dla, String key1, String key2) {
-
-    return dla.execute(key1, key2);
-  }
-
   public MappingEntity saveUnmappedTreatment(String dataSource, String treatment) {
 
     List<String> mappingLabels = Arrays.asList("DataSource", "TreatmentName");
@@ -608,12 +543,11 @@ public class MappingService {
     mappingValues.put("DataSource", dataSource.toLowerCase());
     mappingValues.put("TreatmentName", treatment);
 
-    MappingEntity mappingEntity = new MappingEntity(MappingEntityType.treatment.get(),
+    MappingEntity mappingEntity = new MappingEntity(MappingEntityType.TREATMENT.getLabel(),
         mappingLabels, mappingValues);
 
     return saveUnmappedTerms(mappingEntity);
   }
-
 
   public MappingEntity saveUnmappedDiagnosis(String dataSource, String diagnosis,
       String originTissue, String tumorType) {
@@ -630,12 +564,11 @@ public class MappingService {
     mappingValues.put("OriginTissue", originTissue);
     mappingValues.put("TumorType", tumorType);
 
-    MappingEntity mappingEntity = new MappingEntity(MappingEntityType.diagnosis.get(),
+    MappingEntity mappingEntity = new MappingEntity(MappingEntityType.DIAGNOSIS.getLabel(),
         mappingLabels, mappingValues);
 
     return saveUnmappedTerms(mappingEntity);
   }
-
 
   public MappingEntity saveUnmappedTerms(MappingEntity mappingEntity) {
 
@@ -657,54 +590,10 @@ public class MappingService {
     return null;
   }
 
-
-  public void saveMappedTerms(List<MappingEntity> mappingEntities) {
-
-    for (MappingEntity mappingEntity : mappingEntities) {
-
-      mappingEntity.setEntityId(null);
-      mappingEntity.setStatus(Status.validated.get());
-      mappingEntity.setEntityType(mappingEntity.getEntityType().toLowerCase());
-
-      String mappingKey = mappingEntity.getMappingKey();
-
-      MappingEntity entity = mappingEntityRepository.findByMappingKey(mappingKey);
-
-      if (entity == null) {
-
-        mappingEntityRepository.save(mappingEntity);
-
-        log.warn("{} was SAVED ", mappingKey);
-
-      } else {
-        log.warn("{} was not NOT SAVED: found in the Database ", mappingKey);
-      }
-    }
-  }
-
   public void purgeMappingDatabase() {
     log.warn("Deleting H2 database and all its {} mapping data",
         mappingEntityRepository.findAll().size());
     mappingEntityRepository.deleteAll();
-  }
-
-  public List<MappingEntity> loadMappingsFromFile(String jsonFile) {
-
-    String jsonKey = "mappings";
-    List<MappingEntity> mappingEntities = new ArrayList<>();
-
-    List<Map<String, Object>> mappings = utilityService.serializeJSONToMaps(jsonFile, jsonKey);
-
-    mappings.forEach(mapping -> {
-
-      MappingEntity mappingEntity = mapper.convertValue(mapping, MappingEntity.class);
-      mappingEntity.setMappingKey(mappingEntity.generateMappingKey());
-      mappingEntity.setDateCreated(new Date());
-      mappingEntities.add(mappingEntity);
-
-    });
-
-    return mappingEntities;
   }
 
   public void writeMappingsToFile(String entityType) {
@@ -935,8 +824,53 @@ public class MappingService {
     });
 
     return savedEntities;
-
   }
 
+  public void rebuildDatabaseFromRulesFiles() {
+    Map<String, String> mappingRulesPaths = getMappingRulesPaths();
+    log.info("Database will be rebuild with: " + mappingRulesPaths);
+    loadDiagnosisMappings(mappingRulesPaths.get(MappingEntityType.DIAGNOSIS.getLabel()));
+    loadTreatmentMappings(mappingRulesPaths.get(MappingEntityType.TREATMENT.getLabel()));
+    purgeMappingDatabase();
+    saveEntitiesInContainerToDatabase();
+  }
+
+  private void saveEntitiesInContainerToDatabase() {
+    List<MappingEntity> mappingEntities = container.getEntityList();
+    mappingEntityRepository.saveAll(mappingEntities);
+    log.info("Database rebuild. Mapping data count: " + mappingEntityRepository.count());
+  }
+
+  public void writeEurOPDXMappingsRules(OutputStream outputStream) throws IOException {
+    List<String> dataSourcesToExport = new ArrayList<>(Arrays.asList(
+        "Curie-BC",
+        "Curie-LC",
+        "Curie-OC",
+        "IRCC-CRC",
+        "IRCC-GC",
+        "TRACE",
+        "UOC-BC",
+        "UOM-BC",
+        "VHIO-BC",
+        "VHIO-CRC"
+    ));
+
+    List<MappingEntity> diagnosisMappings =
+        getMappingsByDSAndType(dataSourcesToExport, MappingEntityType.DIAGNOSIS.getLabel()).getEntityList();
+    List<MappingEntity> treatmentMappings =
+        getMappingsByDSAndType(dataSourcesToExport, MappingEntityType.TREATMENT.getLabel()).getEntityList();
+    Gson gson = new Gson();
+    String diagnosisMappingsJson = gson.toJson(diagnosisMappings);
+    String treatmentMappingsJson = gson.toJson(treatmentMappings);
+
+    try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
+      zos.putNextEntry(new ZipEntry("EurOPDX_diagnosis_mappings.json"));
+      zos.write(diagnosisMappingsJson.getBytes());
+      zos.closeEntry();
+      zos.putNextEntry(new ZipEntry("EurOPDX_treatment_mappings.json"));
+      zos.write(treatmentMappingsJson.getBytes());
+      zos.closeEntry();
+    }
+  }
 
 }
