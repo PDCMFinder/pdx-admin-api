@@ -4,7 +4,7 @@ metadata:
   name: pdx-admin-api
   namespace: pdx-admin-interface
 spec:
-  replicas: 3
+  replicas: 1
   template:
     metadata:
       labels:
