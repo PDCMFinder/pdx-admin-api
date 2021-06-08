@@ -19,6 +19,9 @@ spec:
             - --data-dir=/opt/pdx-data
           ports:
             - containerPort: 8081
+          envFrom:
+            - configMapRef:
+                name: pdx-admin-api-dev-config
           volumeMounts:
             - name: pv-data
               mountPath: /opt/pdx-data
