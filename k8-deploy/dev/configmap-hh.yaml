@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pdx-admin-api-dev-config
+  namespace: pdx-admin-interface-dev
+data:
+  HTTP_PROXY_HOST: hh-wwwcache.ebi.ac.uk
+  HTTP_PROXY_PORT: "3128"
+  HTTPS_PROXY_HOST: hh-wwwcache.ebi.ac.uk
+  HTTPS_PROXY_PORT: "3128"

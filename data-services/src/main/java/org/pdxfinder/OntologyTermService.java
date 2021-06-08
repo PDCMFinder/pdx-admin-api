@@ -1,5 +1,12 @@
 package org.pdxfinder;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.Proxy.Type;
+import java.net.URL;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.pdxfinder.repositories.OntologyTermRepository;
@@ -43,9 +50,6 @@ public class OntologyTermService {
 
     @Autowired
     OntologyTermRepository ontologyTermRepository;
-
-    @Autowired
-    UtilityService utilityService;
 
     public Set<String> getVisitedTerms() {
         return visitedTerms;
@@ -111,7 +115,7 @@ public class OntologyTermService {
 
             String url = OLS_BASE_URL + encodedTermUrl + "/hierarchicalDescendants?size=200&page=" + currentPage;
             log.info(url);
-            String json = utilityService.parseURL(url);
+            String json = getContentFromUrlWithProxy(url);
             JSONObject job = new JSONObject(json);
             parseHierarchicalChildren(job, type);
 
@@ -125,7 +129,7 @@ public class OntologyTermService {
     }
 
 
-    public void getDiagnosisTerms(){
+    public void getDiagnosisTerms() {
         log.info("Getting diagnosis terms");
 
         //create the Cancer term
@@ -152,12 +156,55 @@ public class OntologyTermService {
                 log.warn(e.getMessage());
             }
             String url = OLS_BASE_URL+parentUrlEncoded+"/hierarchicalChildren?size=200";
-            String json = utilityService.parseURL(url);
+            String json = getContentFromUrlWithProxy(url);
             JSONObject job = new JSONObject(json);
             //if this term does not have child nodes, continue
             parseHierarchicalChildren(job, "diagnosis");
         }
     }
+
+
+    private  String getContentFromUrlWithProxy(String url)  {
+        String urlResponse = "";
+        Proxy proxy = null;
+        String HTTPS_PROXY_HOST = System.getenv("HTTPS_PROXY_HOST");
+        String HTTPS_PROXY_PORT = System.getenv("HTTPS_PROXY_PORT");
+        if (HTTPS_PROXY_HOST != null && HTTPS_PROXY_PORT != null) {
+            int PORT = Integer.parseInt(HTTPS_PROXY_PORT);
+            proxy = new Proxy(
+                Type.HTTP, new InetSocketAddress(HTTPS_PROXY_HOST, PORT));
+        }
+
+        try {
+            URL obj = new URL(url);
+            HttpURLConnection con = proxy == null ? (HttpURLConnection) obj.openConnection() :
+                (HttpURLConnection) obj.openConnection(proxy);
+            con.setRequestMethod("GET");
+            int responseCode = con.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) { // success
+                BufferedReader in = new BufferedReader(new InputStreamReader(
+                    con.getInputStream()));
+                String inputLine;
+                StringBuilder response = new StringBuilder();
+
+                while ((inputLine = in.readLine()) != null) {
+                    response.append(inputLine);
+                }
+                in.close();
+                urlResponse = response.toString();
+                return response.toString();
+            } else {
+                log.error("URL with unsuccessful code [" + url + "] -> "+ responseCode);
+            }
+        }
+        catch (Exception e) {
+            log.error("Unable to read from URL " + url, e);
+        }
+
+        return urlResponse;
+
+    }
+
 
     public void parseHierarchicalChildren(JSONObject job, String type){
 
