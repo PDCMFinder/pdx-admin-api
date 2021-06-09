@@ -31,7 +31,6 @@ public class OntologyTerm {
 
     @NonNull
     @EqualsAndHashCode.Include
-    @Column(unique=true)
     private String url;
 
     @NonNull
