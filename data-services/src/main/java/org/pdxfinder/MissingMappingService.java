@@ -1,5 +1,6 @@
 package org.pdxfinder;
 
+
 import org.pdxfinder.utils.reader.Reader;
 import org.pdxfinder.utils.reader.TableSetCleaner;
 import org.slf4j.Logger;
@@ -45,29 +46,47 @@ public class MissingMappingService {
         missingMappingsContainer = new MappingContainer();
         log.info("Deleting not mapped entities");
         mappingService.deleteMappingEntities(mappingService.getNotMappedEntities());
-
-        List<Path> subfolders = getProviderDirs();
-        readDataFromTemplates(subfolders);
+        populateMissingMappingsContainer();
 
         return missingMappingsContainer;
     }
 
-    public void readDataFromTemplates(List<Path> folders) {
-
-        PathMatcher metadataFile = FileSystems.getDefault().getPathMatcher("glob:**{metadata-sample,metadata-loader}.tsv");
-        PathMatcher drugDataFile = FileSystems.getDefault().getPathMatcher("glob:**{drug,treatment}*.tsv");
-
-        for (Path p : folders) {
-            Map<String, Table> metaDataTemplate = reader.readAllTsvFilesIn(p, metadataFile);
-            metaDataTemplate = tableSetCleaner.cleanPdxTables(metaDataTemplate);
-            log.info(p.toString());
-            getDiagnosisAttributesFromTemplate(metaDataTemplate);
-
-            Map<String, Table> drugDataTemplate = reader.readAllTreatmentFilesIn(p, drugDataFile);
-            drugDataTemplate = tableSetCleaner.cleanPdxTables(drugDataTemplate);
-            getTreatmentAttributesFromTemplate(drugDataTemplate, p.getFileName().toString());
-
+    public void populateMissingMappingsContainer() {
+        List<Path> folders = getProviderDirs();
+        PathMatcher providerYaml = FileSystems.getDefault().getPathMatcher("glob:**source.yaml");
+        for (Path path : folders) {
+            String dataSourceAbbreviation = getProviderNameFromYaml(path, providerYaml);
+            populateDiagnosisEntities(path, dataSourceAbbreviation);
+            populateTreatmentEntities(path);
         }
+    }
+
+    private void populateDiagnosisEntities(Path path, String dataSourceAbbreviation) {
+        PathMatcher metadataFile = FileSystems.getDefault().getPathMatcher("glob:**{metadata-sample}.tsv");
+        Map<String, Table> metaDataTemplate = getAndCleanTemplateData(path, metadataFile);
+        log.info(path.toString());
+        getDiagnosisAttributesFromTemplate(metaDataTemplate, dataSourceAbbreviation);
+    }
+
+    private void populateTreatmentEntities(Path path) {
+        PathMatcher drugDataFile = FileSystems.getDefault().getPathMatcher("glob:**{drug,treatment}*.tsv");
+        Map<String, Table> drugDataTemplate = getAndCleanTemplateData(path, drugDataFile);
+        getTreatmentAttributesFromTemplate(drugDataTemplate, path.getFileName().toString());
+    }
+
+    private Map<String, Table> getAndCleanTemplateData(Path path, PathMatcher file) {
+        Map<String, Table> template = reader.readAllTsvFilesIn(path, file);
+        return tableSetCleaner.cleanPdxTables(template);
+    }
+
+    private String getProviderNameFromYaml(Path path, PathMatcher providerYaml) {
+        Map<String, String> yamlMap = reader.readyamlfromfilesystem(path, providerYaml);
+        String dataSourceAbbreviation = yamlMap.get("provider");
+        if (dataSourceAbbreviation.isEmpty()) {
+            String error = String.format("could not read provider abbreviation for source.yaml in %s", path.toString());
+            throw new IllegalArgumentException(error);
+        }
+        return dataSourceAbbreviation;
     }
 
     public List<Path> getProviderDirs() {
@@ -88,13 +107,9 @@ public class MissingMappingService {
         return subfolders;
     }
 
-    public void getDiagnosisAttributesFromTemplate(Map<String, Table> tables) {
+    public void getDiagnosisAttributesFromTemplate(Map<String, Table> tables, String dataSource) {
         try {
-            Table loaderTable = tables.get("metadata-loader.tsv");
-            Row loaderRow = loaderTable.row(0);
-            String dataSource = loaderRow.getString("abbreviation");
-
-            Table sampleTable = tables.get("metadata-sample.tsv");
+            Table sampleTable = tables.get("metadata-patient_sample.tsv");
 
             for (Row row : sampleTable) {
 
