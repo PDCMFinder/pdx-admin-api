@@ -56,11 +56,11 @@ public class Reader {
 
     public Map<String, String> readyamlfromfilesystem(Path targetDirectory, PathMatcher filter) {
         Map<String, String> yamlMap = Map.of("provider_abbreviation", "");
-        try (final Stream<Path> stream = Files.walk(targetDirectory, 1)) {
-            Path path = stream
-                    .filter(filter::matches)
+        String error = String.format("No source.yaml fond in directory %s", targetDirectory);
+        try (final Stream<Path> stream = Files.walk(targetDirectory, 2)) {
+            Path path = stream.filter(filter::matches)
                     .findFirst()
-                    .orElseThrow();
+                    .orElseThrow(() -> new NoSuchElementException(error));
             yamlMap = readYamlToMap(path);
         } catch (IOException e) {
             e.printStackTrace();

@@ -715,8 +715,9 @@ public class MappingService {
   public MappingEntity getMappingEntityById(Integer entityId) {
 
     Long id = Long.parseLong(String.valueOf(entityId));
-
-    MappingEntity mappingEntity = mappingEntityRepository.findByEntityId(id).orElseThrow();
+    var errorMessage = String.format("Could not find entityId %s", entityId);
+    MappingEntity mappingEntity = mappingEntityRepository.findByEntityId(id)
+            .orElseThrow(() -> new NoSuchElementException(errorMessage));
 
     //Get suggestions only if mapped term is missing
     MappingContainer mappingContainer = getMappedEntitiesByType(mappingEntity.getEntityType());
@@ -725,8 +726,8 @@ public class MappingService {
     mappingContainer.getMappings().remove(mappingEntity.getMappingKey());
 
     mappingEntity
-        .setSuggestedMappings(getSuggestionsForUnmappedEntity(
-            mappingEntity,
+            .setSuggestedMappings(getSuggestionsForUnmappedEntity(
+                    mappingEntity,
             mappingContainer));
 
     return mappingEntity;
