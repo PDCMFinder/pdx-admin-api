@@ -96,8 +96,8 @@ public class MissingMappingService {
                 "/data/UPDOG");
 
         List<Path> subfolders;
-        try {
-            subfolders = Files.walk(updogDirectory, 1)
+        try (var files = Files.walk(updogDirectory, 1)) {
+            subfolders = files
                     .filter(p -> Files.isDirectory(p) && !p.equals(updogDirectory))
                     .collect(Collectors.toList());
         } catch (Exception e) {
