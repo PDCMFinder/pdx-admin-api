@@ -4,25 +4,27 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.poi.util.IOUtils;
 import org.pdxfinder.*;
 import org.pdxfinder.constants.MappingEntityType;
-import org.pdxfinder.dto.*;
+import org.pdxfinder.dto.PaginationDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -126,7 +128,7 @@ public class MappingsController {
   @GetMapping("/ontologies")
   public Object getOntologies(@RequestParam(value = "type", defaultValue = "diagnosis") Optional<String> dataType){
 
-    String entityType = dataType.get();
+    String entityType = dataType.orElseThrow();
     return ontologyTermService.getTermsByType(entityType);
   }
 

@@ -3,22 +3,16 @@ package org.pdxfinder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
 import org.apache.commons.codec.digest.DigestUtils;
-import java.io.OutputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.pdxfinder.dto.PaginationDTO;
 import org.pdxfinder.constants.CSV;
 import org.pdxfinder.constants.MappingEntityType;
 import org.pdxfinder.constants.Status;
-import org.pdxfinder.repositories.*;
-import org.pdxfinder.utils.*;
+import org.pdxfinder.dto.PaginationDTO;
+import org.pdxfinder.repositories.MappingEntityRepository;
+import org.pdxfinder.utils.DamerauLevenshteinAlgorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +22,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import java.io.File;
+
+import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 public class MappingService {
@@ -115,12 +112,8 @@ public class MappingService {
     Gson gson = new Gson();
     String json = gson.toJson(mappings);
 
-    try {
-      BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, false));
-
+    try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, false))) {
       writer.append(json);
-      writer.close();
-
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -723,7 +716,7 @@ public class MappingService {
 
     Long id = Long.parseLong(String.valueOf(entityId));
 
-    MappingEntity mappingEntity = mappingEntityRepository.findByEntityId(id).get();
+    MappingEntity mappingEntity = mappingEntityRepository.findByEntityId(id).orElseThrow();
 
     //Get suggestions only if mapped term is missing
     MappingContainer mappingContainer = getMappedEntitiesByType(mappingEntity.getEntityType());
