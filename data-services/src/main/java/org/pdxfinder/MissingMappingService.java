@@ -62,7 +62,7 @@ public class MissingMappingService {
     }
 
     private void populateDiagnosisEntities(Path path, String dataSourceAbbreviation) {
-        PathMatcher metadataFile = FileSystems.getDefault().getPathMatcher("glob:**{metadata-sample}.tsv");
+        PathMatcher metadataFile = FileSystems.getDefault().getPathMatcher("glob:**{metadata-patient_sample}.tsv");
         Map<String, Table> metaDataTemplate = getAndCleanTemplateData(path, metadataFile);
         log.info(path.toString());
         getDiagnosisAttributesFromTemplate(metaDataTemplate, dataSourceAbbreviation);
@@ -81,7 +81,7 @@ public class MissingMappingService {
 
     private String getProviderNameFromYaml(Path path, PathMatcher providerYaml) {
         Map<String, String> yamlMap = reader.readyamlfromfilesystem(path, providerYaml);
-        String dataSourceAbbreviation = yamlMap.get("provider");
+        String dataSourceAbbreviation = yamlMap.getOrDefault("provider_abbreviation", "");
         if (dataSourceAbbreviation.isEmpty()) {
             String error = String.format("could not read provider abbreviation for source.yaml in %s", path.toString());
             throw new IllegalArgumentException(error);
@@ -126,8 +126,9 @@ public class MissingMappingService {
                 }
             }
         }
-        catch (Exception e){
-            log.error("Exception while getting diagnosis data from provider.");
+        catch (Exception e) {
+            var error_message = String.format("Exception while getting diagnosis data from provider: %s", dataSource);
+            log.error(error_message);
         }
     }
 
