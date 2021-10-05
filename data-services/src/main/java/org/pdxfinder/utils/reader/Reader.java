@@ -3,9 +3,12 @@ package org.pdxfinder.utils.reader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.yaml.snakeyaml.Yaml;
 import tech.tablesaw.api.Table;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,6 +52,32 @@ public class Reader {
         availableTreatmentPaths.forEach((k, v) -> treatmentTables.putAll(readAllTsvFilesIn(v, filter)));
         return treatmentTables;
 
+    }
+
+    public Map<String, String> readYamlFromFilesystem(Path targetDirectory, PathMatcher filter) {
+        Map<String, String> yamlMap = Map.of("provider_abbreviation", "");
+        String error = String.format("No source.yaml fond in directory %s", targetDirectory);
+        try (final Stream<Path> stream = Files.walk(targetDirectory, 2)) {
+            Path path = stream.filter(filter::matches)
+                    .findFirst()
+                    .orElseThrow(() -> new NoSuchElementException(error));
+            yamlMap = readYamlToMap(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return yamlMap;
+    }
+
+    private Map<String, String> readYamlToMap(Path yamlFile) {
+        Map<String, String> yamlMap = Map.of("provider_abbreviation", "");
+        try {
+            Yaml yaml = new Yaml();
+            InputStream filestream = new FileInputStream(yamlFile.toString());
+            yamlMap = yaml.load(filestream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return yamlMap;
     }
 
     Optional<Path> getSubDirectory(Path targetDirectory, String subDirectoryName) {
