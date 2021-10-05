@@ -80,7 +80,7 @@ public class MissingMappingService {
     }
 
     private String getProviderNameFromYaml(Path path, PathMatcher providerYaml) {
-        Map<String, String> yamlMap = reader.readyamlfromfilesystem(path, providerYaml);
+        Map<String, String> yamlMap = reader.readYamlFromFilesystem(path, providerYaml);
         String dataSourceAbbreviation = yamlMap.getOrDefault("provider_abbreviation", "");
         if (dataSourceAbbreviation.isEmpty()) {
             String error = String.format("could not read provider abbreviation for source.yaml in %s", path.toString());

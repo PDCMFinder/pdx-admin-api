@@ -54,7 +54,7 @@ public class Reader {
 
     }
 
-    public Map<String, String> readyamlfromfilesystem(Path targetDirectory, PathMatcher filter) {
+    public Map<String, String> readYamlFromFilesystem(Path targetDirectory, PathMatcher filter) {
         Map<String, String> yamlMap = Map.of("provider_abbreviation", "");
         String error = String.format("No source.yaml fond in directory %s", targetDirectory);
         try (final Stream<Path> stream = Files.walk(targetDirectory, 2)) {
