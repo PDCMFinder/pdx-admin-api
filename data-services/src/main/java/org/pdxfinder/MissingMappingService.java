@@ -61,20 +61,17 @@ public class MissingMappingService {
 
     private void populateDiagnosisEntities(Path path) {
         PathMatcher metadataFile = FileSystems.getDefault().getPathMatcher("glob:**{metadata-patient_sample}.tsv");
-        Map<String, Table> metaDataTemplate = getAndCleanTemplateData(path, metadataFile);
+        Map<String, Table> metaDataTemplate = reader.readAllTsvFilesIn(path, metadataFile);
+        metaDataTemplate = tableSetCleaner.cleanPdxTables(metaDataTemplate);
         log.info(path.toString());
         getDiagnosisAttributesFromTemplate(metaDataTemplate, path.getFileName().toString());
     }
 
     private void populateTreatmentEntities(Path path) {
         PathMatcher drugDataFile = FileSystems.getDefault().getPathMatcher("glob:**{drug,treatment}*.tsv");
-        Map<String, Table> drugDataTemplate = getAndCleanTemplateData(path, drugDataFile);
+        Map<String, Table> drugDataTemplate = reader.readAllTreatmentFilesIn(path, drugDataFile);
+        drugDataTemplate = tableSetCleaner.cleanPdxTables(drugDataTemplate);
         getTreatmentAttributesFromTemplate(drugDataTemplate, path.getFileName().toString());
-    }
-
-    private Map<String, Table> getAndCleanTemplateData(Path path, PathMatcher file) {
-        Map<String, Table> template = reader.readAllTsvFilesIn(path, file);
-        return tableSetCleaner.cleanPdxTables(template);
     }
 
     private String getProviderNameFromYaml(Path path, PathMatcher providerYaml) {
