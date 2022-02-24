@@ -53,19 +53,17 @@ public class MissingMappingService {
 
     public void populateMissingMappingsContainer() {
         List<Path> folders = getProviderDirs();
-        PathMatcher providerYaml = FileSystems.getDefault().getPathMatcher("glob:**source.yaml");
         for (Path path : folders) {
-            String dataSourceAbbreviation = getProviderNameFromYaml(path, providerYaml);
-            populateDiagnosisEntities(path, dataSourceAbbreviation);
+            populateDiagnosisEntities(path);
             populateTreatmentEntities(path);
         }
     }
 
-    private void populateDiagnosisEntities(Path path, String dataSourceAbbreviation) {
+    private void populateDiagnosisEntities(Path path) {
         PathMatcher metadataFile = FileSystems.getDefault().getPathMatcher("glob:**{metadata-patient_sample}.tsv");
         Map<String, Table> metaDataTemplate = getAndCleanTemplateData(path, metadataFile);
         log.info(path.toString());
-        getDiagnosisAttributesFromTemplate(metaDataTemplate, dataSourceAbbreviation);
+        getDiagnosisAttributesFromTemplate(metaDataTemplate, path.getFileName().toString());
     }
 
     private void populateTreatmentEntities(Path path) {
