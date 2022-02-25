@@ -132,7 +132,7 @@ public class MissingMappingService {
     public void getTreatmentAttributesFromTemplate(Map<String, Table> tables, String abbrev){
 
             Table drugTable = tables.get("drugdosing-Sheet1.tsv");
-            Table treatmentTable = tables.get("patienttreatment.tsv");
+            Table treatmentTable = tables.get("patienttreatment-Sheet1.tsv");
             getTreatmentAttributesFromTemplate(drugTable, abbrev);
             getTreatmentAttributesFromTemplate(treatmentTable, abbrev);
     }
