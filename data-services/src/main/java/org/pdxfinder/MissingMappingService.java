@@ -53,30 +53,25 @@ public class MissingMappingService {
 
     public void populateMissingMappingsContainer() {
         List<Path> folders = getProviderDirs();
-        PathMatcher providerYaml = FileSystems.getDefault().getPathMatcher("glob:**source.yaml");
         for (Path path : folders) {
-            String dataSourceAbbreviation = getProviderNameFromYaml(path, providerYaml);
-            populateDiagnosisEntities(path, dataSourceAbbreviation);
+            populateDiagnosisEntities(path);
             populateTreatmentEntities(path);
         }
     }
 
-    private void populateDiagnosisEntities(Path path, String dataSourceAbbreviation) {
+    private void populateDiagnosisEntities(Path path) {
         PathMatcher metadataFile = FileSystems.getDefault().getPathMatcher("glob:**{metadata-patient_sample}.tsv");
-        Map<String, Table> metaDataTemplate = getAndCleanTemplateData(path, metadataFile);
+        Map<String, Table> metaDataTemplate = reader.readAllTsvFilesIn(path, metadataFile);
+        metaDataTemplate = tableSetCleaner.cleanPdxTables(metaDataTemplate);
         log.info(path.toString());
-        getDiagnosisAttributesFromTemplate(metaDataTemplate, dataSourceAbbreviation);
+        getDiagnosisAttributesFromTemplate(metaDataTemplate, path.getFileName().toString());
     }
 
     private void populateTreatmentEntities(Path path) {
         PathMatcher drugDataFile = FileSystems.getDefault().getPathMatcher("glob:**{drug,treatment}*.tsv");
-        Map<String, Table> drugDataTemplate = getAndCleanTemplateData(path, drugDataFile);
+        Map<String, Table> drugDataTemplate = reader.readAllTreatmentFilesIn(path, drugDataFile);
+        drugDataTemplate = tableSetCleaner.cleanPdxTables(drugDataTemplate);
         getTreatmentAttributesFromTemplate(drugDataTemplate, path.getFileName().toString());
-    }
-
-    private Map<String, Table> getAndCleanTemplateData(Path path, PathMatcher file) {
-        Map<String, Table> template = reader.readAllTsvFilesIn(path, file);
-        return tableSetCleaner.cleanPdxTables(template);
     }
 
     private String getProviderNameFromYaml(Path path, PathMatcher providerYaml) {
@@ -137,7 +132,7 @@ public class MissingMappingService {
     public void getTreatmentAttributesFromTemplate(Map<String, Table> tables, String abbrev){
 
             Table drugTable = tables.get("drugdosing-Sheet1.tsv");
-            Table treatmentTable = tables.get("patienttreatment.tsv");
+            Table treatmentTable = tables.get("patienttreatment-Sheet1.tsv");
             getTreatmentAttributesFromTemplate(drugTable, abbrev);
             getTreatmentAttributesFromTemplate(treatmentTable, abbrev);
     }
