@@ -60,29 +60,25 @@ public class MissingMappingService {
     }
 
     private void populateDiagnosisEntities(Path path) {
+        log.info("\nSearching diagnosis for " + path.toString());
+        String dataSource = path.getFileName().toString();
+        log.info("DataSource: " + dataSource);
         PathMatcher metadataFile = FileSystems.getDefault().getPathMatcher("glob:**{metadata-patient_sample}.tsv");
         Map<String, Table> metaDataTemplate = reader.readAllTsvFilesIn(path, metadataFile);
         metaDataTemplate = tableSetCleaner.cleanPdxTables(metaDataTemplate);
-        log.info(path.toString());
-        getDiagnosisAttributesFromTemplate(metaDataTemplate, path.getFileName().toString());
+        getDiagnosisAttributesFromTemplate(metaDataTemplate, dataSource);
     }
 
     private void populateTreatmentEntities(Path path) {
+        log.info("\nSearching treatments for " + path.toString());
+        String dataSource = path.getFileName().toString();
+        log.info("DataSource: " + dataSource);
         PathMatcher drugDataFile = FileSystems.getDefault().getPathMatcher("glob:**{drug,treatment}*.tsv");
         Map<String, Table> drugDataTemplate = reader.readAllTreatmentFilesIn(path, drugDataFile);
         drugDataTemplate = tableSetCleaner.cleanPdxTables(drugDataTemplate);
-        getTreatmentAttributesFromTemplate(drugDataTemplate, path.getFileName().toString());
+        getTreatmentAttributesFromTemplate(drugDataTemplate, dataSource);
     }
 
-    private String getProviderNameFromYaml(Path path, PathMatcher providerYaml) {
-        Map<String, String> yamlMap = reader.readYamlFromFilesystem(path, providerYaml);
-        String dataSourceAbbreviation = yamlMap.getOrDefault("provider_abbreviation", "");
-        if (dataSourceAbbreviation.isEmpty()) {
-            String error = String.format("could not read provider abbreviation for source.yaml in %s", path.toString());
-            throw new IllegalArgumentException(error);
-        }
-        return dataSourceAbbreviation;
-    }
 
     public List<Path> getProviderDirs() {
 
@@ -116,14 +112,17 @@ public class MissingMappingService {
 
                 if (mappingEntity == null) {
                     MappingEntity newUnmappedEntity = mappingService.saveUnmappedDiagnosis(dataSource, diagnosis, primarySiteName, tumorTypeName);
-                    if (newUnmappedEntity != null)
+                    if (newUnmappedEntity != null) {
                         missingMappingsContainer.addEntity(newUnmappedEntity);
+                    }
+
                 }
             }
         }
         catch (Exception e) {
             var error_message = String.format("Exception while getting diagnosis data from provider: %s", dataSource);
             log.error(error_message);
+            log.error("details: " + e.getMessage());
         }
     }
 
@@ -140,7 +139,9 @@ public class MissingMappingService {
     private void getTreatmentAttributesFromTemplate(Table table, String abbrev){
 
         try {
-            if(table == null) return;
+            if (table == null) {
+                return;
+            }
             for (Row row : table) {
 
                 String treatmentName = row.getString("treatment_name");
@@ -151,8 +152,9 @@ public class MissingMappingService {
 
                     if (mappingEntity == null) {
                         MappingEntity newUnmappedEntity = mappingService.saveUnmappedTreatment(abbrev, drug.trim());
-                        if (newUnmappedEntity != null)
+                        if (newUnmappedEntity != null) {
                             missingMappingsContainer.addEntity(newUnmappedEntity);
+                        }
                     }
                 }
 
@@ -160,6 +162,7 @@ public class MissingMappingService {
         }
         catch (Exception e){
             log.error("Exception while getting treatment data from provider");
+            log.error("details: " + e.getMessage());
         }
     }
 
