@@ -313,6 +313,12 @@ public class MappingsController {
     mappingService.writeMappingsToFile(MappingEntityType.TREATMENT.getLabel());
   }
 
+  @PostMapping("rebuildRulesJsonFromDatabaseWithoutIgnoringUnmapped")
+  public void rebuildRulesJsonFromDatabaseWithoutIgnoringUnmapped() {
+    mappingService.writeMappingsToFileWithoutIgnoringUnmapped(MappingEntityType.DIAGNOSIS.getLabel());
+    mappingService.writeMappingsToFileWithoutIgnoringUnmapped(MappingEntityType.TREATMENT.getLabel());
+  }
+
   @RequestMapping(value="/getEurOPDXMappingsRules", produces="application/zip")
   public void getEurOPDXMappingsRules(HttpServletResponse response) throws IOException {
     response.setStatus(HttpServletResponse.SC_OK);
