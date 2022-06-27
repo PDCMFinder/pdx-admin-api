@@ -48,6 +48,7 @@ public interface MappingEntityRepository extends JpaRepository<MappingEntity, Lo
   List<MappingEntity> findByEntityTypeAndMapTypeIsNotNull(String entityType);
 
   List<MappingEntity> findByEntityTypeAndStatusIsNot(String entityType, String statusIsNot);
+  List<MappingEntity> findByEntityType(String entityType);
 
   @Query("SELECT distinct lower(mv), " +
       " count(case when me.status = 'unmapped' THEN 1 END) as unmapped, " +

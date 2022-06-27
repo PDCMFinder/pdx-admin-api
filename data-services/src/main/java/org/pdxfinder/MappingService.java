@@ -621,6 +621,37 @@ public class MappingService {
 
   }
 
+  public void writeMappingsToFileWithoutIgnoringUnmapped(String entityType) {
+
+    String jsonKey = "mappings";
+
+    String mappingFile = rootDir + "/mapping/" + entityType + "_mappings.json";
+
+    // Generate Unique name to back up previous mapping file
+    String backupPreviousMappingFile = rootDir + "/mapping/backup/" + entityType + "/" +
+        (new Date()).toString().replaceAll(" ", "-") + "-" + entityType + "_mappings.json";
+
+    // Back up previous mapping file before replacement
+    utilityService.moveFile(mappingFile, backupPreviousMappingFile);
+
+    // Get ALL terms from the data base
+    List<MappingEntity> mappingEntities = mappingEntityRepository.findByEntityType(entityType);
+
+    Map dataMap = new HashMap();
+
+    dataMap.put(jsonKey, mappingEntities);
+
+    // Write latest mapped terms to the file system
+    try {
+
+      String newFile = mapper.writeValueAsString(dataMap);
+      utilityService.writeToFile(newFile, mappingFile, false);
+
+    } catch (JsonProcessingException e) {
+    }
+
+  }
+
 
   public PaginationDTO search(int page,
       int size,
