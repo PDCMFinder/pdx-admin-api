@@ -140,6 +140,7 @@ public class MissingMappingService {
 
         try {
             if (table == null) {
+                log.info("Treatment table null for {}", abbrev);
                 return;
             }
             for (Row row : table) {
