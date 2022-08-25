@@ -538,6 +538,7 @@ public class MappingService {
 
     MappingEntity mappingEntity = new MappingEntity(MappingEntityType.TREATMENT.getLabel(),
         mappingLabels, mappingValues);
+    log.info("Saving treatment term for {}", dataSource);
 
     return saveUnmappedTerms(mappingEntity);
   }
