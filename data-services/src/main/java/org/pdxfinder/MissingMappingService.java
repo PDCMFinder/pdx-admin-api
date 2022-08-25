@@ -75,6 +75,7 @@ public class MissingMappingService {
         log.info("DataSource: " + dataSource);
         PathMatcher drugDataFile = FileSystems.getDefault().getPathMatcher("glob:**{drug,treatment}*.tsv");
         Map<String, Table> drugDataTemplate = reader.readAllTreatmentFilesIn(path, drugDataFile);
+        log.info("Treatments table size for {} - {}: {}: ", dataSource, path.toString(), drugDataTemplate.size());
         drugDataTemplate = tableSetCleaner.cleanPdxTables(drugDataTemplate);
         getTreatmentAttributesFromTemplate(drugDataTemplate, dataSource);
     }
