@@ -539,7 +539,7 @@ public class MappingService {
     MappingEntity mappingEntity = new MappingEntity(MappingEntityType.TREATMENT.getLabel(),
         mappingLabels, mappingValues);
 
-    return saveUnmappedTerms(mappingEntity);
+    return saveUnmappedTerms(mappingEntity, dataSource, MappingEntityType.TREATMENT.getLabel());
   }
 
   public MappingEntity saveUnmappedDiagnosis(String dataSource, String diagnosis,
@@ -560,10 +560,10 @@ public class MappingService {
     MappingEntity mappingEntity = new MappingEntity(MappingEntityType.DIAGNOSIS.getLabel(),
         mappingLabels, mappingValues);
 
-    return saveUnmappedTerms(mappingEntity);
+    return saveUnmappedTerms(mappingEntity, dataSource, MappingEntityType.DIAGNOSIS.getLabel());
   }
 
-  public MappingEntity saveUnmappedTerms(MappingEntity mappingEntity) {
+  public MappingEntity saveUnmappedTerms(MappingEntity mappingEntity, String dataSource, String type) {
 
     mappingEntity.setStatus(Status.unmapped.get());
     mappingEntity.setMappedTermLabel("-");
@@ -577,7 +577,7 @@ public class MappingService {
 
     if (entity == null) {
 
-      log.info("UNMAPPED TERM WAS SAVED: {}", mappingEntity.generateMappingKey());
+      log.info("UNMAPPED {} TERM ({}) WAS SAVED: {}", type, dataSource, mappingEntity.generateMappingKey());
       return mappingEntityRepository.save(mappingEntity);
     }
     return null;
